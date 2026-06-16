@@ -24,6 +24,7 @@ qt_add_qml_module(SkylandersGamepadManager
     VERSION 1.0
     QML_FILES
         src/Main.qml
+        src/ControllerBox.qml
 )
 
 target_link_libraries(SkylandersGamepadManager PRIVATE Qt6::Quick)
