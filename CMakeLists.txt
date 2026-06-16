@@ -11,12 +11,19 @@ if (LINUX)
     pkg_check_modules(LIBUDEV REQUIRED libudev)
 endif()
 
-find_package(Qt6 REQUIRED COMPONENTS Widgets)
+find_package(Qt6 REQUIRED COMPONENTS Quick)
 
 qt_standard_project_setup()
 
-qt_add_executable(SkylandersGamepadManager)
+qt_add_executable(SkylandersGamepadManager
+    src/main.cpp
+)
 
-add_subdirectory(src)
+qt_add_qml_module(SkylandersGamepadManager
+    URI SkylandersGamepadManagerQML # note: the URI needs to be different from the project name because during build QML makes a directory in `build/` with the QML URI, so linking fails since a directory wit the project name already exists
+    VERSION 1.0
+    QML_FILES
+        src/Main.qml
+)
 
-target_link_libraries(SkylandersGamepadManager PRIVATE Qt6::Widgets)
+target_link_libraries(SkylandersGamepadManager PRIVATE Qt6::Quick)

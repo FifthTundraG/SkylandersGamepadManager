@@ -1,11 +1,12 @@
-#include <QApplication>
-#include <QLabel>
+#include <QGuiApplication>
+#include <QQmlApplicationEngine>
 
-int main(int argc, char *argv[]) {
-    QApplication app(argc, argv);
+int main(int argc, char *argv[])
+{
+    QGuiApplication app(argc, argv);
 
-    QLabel label("Hello World!");
-    label.show();
+    QQmlApplicationEngine engine;
+    engine.loadFromModule("SkylandersGamepadManagerQML", "Main");
 
     return app.exec();
 }
