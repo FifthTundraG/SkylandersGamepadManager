@@ -7,6 +7,7 @@ target_include_directories(skylanders_gamepad_lib INTERFACE
 
 target_sources(skylanders_gamepad_lib INTERFACE
     ${CMAKE_CURRENT_SOURCE_DIR}/gamepad.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/gamepad.cpp
 )
 
 # Include platform-specific implementations
