@@ -26,7 +26,7 @@ TBD
 ## Contributing
 TODO: donation link for macOS developer license
 
-TBD
+Please contribute. See [CONTRIBUTING.md](CONTRIBUTING.md) for contributing instructions and [BUILDING.md](BUILDING.md) for build instructions.
 
 ## Special Thanks
 - The platform-specific projects that came before this:
