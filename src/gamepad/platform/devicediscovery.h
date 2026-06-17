@@ -34,9 +34,6 @@ public:
     virtual bool startNotify(const QString &characteristicPath) = 0;
     virtual bool stopNotify(const QString &characteristicPath) = 0;
 
-    virtual void setup() = 0;
-    virtual void cleanup() = 0;
-
 signals:
     void deviceConnected(const QString &devicePath);
     void deviceDisconnected(const QString &devicePath);
@@ -44,5 +41,5 @@ signals:
 
 class DeviceDiscoveryFactory {
 public:
-    static DeviceDiscovery *create(QObject *parent = nullptr);
+    static DeviceDiscovery* create(QObject *parent = nullptr);
 };

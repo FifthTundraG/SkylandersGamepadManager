@@ -24,10 +24,11 @@
 #include "gamepad.h"
 #include "devicediscovery.h"
 
-GamepadManager::GamepadManager(DeviceDiscovery *discovery, QObject *parent)
-    : QObject(parent),
-      m_discovery(discovery)
+GamepadManager::GamepadManager(QObject *parent)
+    : QObject(parent)
 {
+    m_discovery = DeviceDiscoveryFactory::create(this);
+
     // Wire discovery signals → manager slots
     connect(m_discovery, &DeviceDiscovery::deviceConnected,
             this, &GamepadManager::onDeviceConnected);
@@ -77,7 +78,7 @@ void GamepadManager::addGamepad(const QString &devicePath)
 
     auto device = VirtualInputFactory::create(DEVICE_NAME);
 
-    QPointer<Gamepad> gamepad = new Gamepad(std::move(device), this);
+    QPointer<Gamepad> gamepad = new Gamepad(devicePath, std::move(device), this);
 
     m_gamepads.insert(devicePath, gamepad);
 }

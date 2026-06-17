@@ -30,7 +30,11 @@ int main(int argc, char *argv[])
 
     qInfo() << "Setting up gamepad manager...";
 
-    GamepadManager *manager = new GamepadManager(DeviceDiscoveryFactory::create());
+    GamepadManager *manager = new GamepadManager();
+
+    qInfo() << "Manager set up. Checking for existing connections...";
+
+    manager->initialize();
 
     return app.exec();
 }

@@ -30,7 +30,7 @@ class GamepadManager : public QObject
     Q_OBJECT
 
 public:
-    explicit GamepadManager(DeviceDiscovery *discovery, QObject *parent = nullptr);
+    explicit GamepadManager(QObject *parent = nullptr);
     ~GamepadManager() override;
 
     /**

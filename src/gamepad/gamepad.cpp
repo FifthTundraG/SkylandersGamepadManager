@@ -24,10 +24,13 @@
 #ifdef __linux__
 #include <QtDBus/QDBusInterface>
 #include <QtDBus/QDBusReply>
+#include <QtDBus/QDBusMetaType>
 #endif
 
-Gamepad::Gamepad(std::unique_ptr<VirtualInputDevice> device, QObject *parent)
-    : QObject(parent), m_inputDevice(std::move(device))
+Gamepad::Gamepad(const QString devicePath, std::unique_ptr<VirtualInputDevice> device, QObject *parent)
+    : QObject(parent),
+      m_devicePath(devicePath),
+      m_inputDevice(std::move(device))
 {
 #ifdef __linux__
     // Find characteristic
@@ -54,12 +57,6 @@ Gamepad::Gamepad(std::unique_ptr<VirtualInputDevice> device, QObject *parent)
 Gamepad::~Gamepad()
 {
     resetState();
-}
-
-
-QString Gamepad::devicePath() const
-{
-    return m_inputDevice ? m_inputDevice->getDevicePath() : QString();
 }
 
 void Gamepad::resetState() // todo: is this necessary?
@@ -139,9 +136,17 @@ void Gamepad::processData(const QByteArray &data)
 }
 
 #ifdef __linux__
+using ManagedObjects =
+    QMap<QDBusObjectPath,
+        QMap<QString,
+            QMap<QString, QVariant>>>;
+
 QString Gamepad::findCharacteristicPath(const QString &uuid)
 {
-    qInfo() << "Searching for characteristic" << uuid << "on device" << devicePath();
+    qInfo() << "Searching for characteristic" << uuid << "on device" << this->m_devicePath;
+
+    // we must register managed objects return value before any call
+    qDBusRegisterMetaType<ManagedObjects>();
 
     QDBusInterface iface(
         "org.bluez",
@@ -150,25 +155,25 @@ QString Gamepad::findCharacteristicPath(const QString &uuid)
         QDBusConnection::systemBus()
     );
 
-    QDBusReply<QVariant> reply = iface.call("GetManagedObjects");
+    QDBusReply<ManagedObjects> reply = iface.call("GetManagedObjects");
 
     if (!reply.isValid()) {
         qWarning() << "Failed to get managed objects:" << reply.error().message();
         return QString();
     }
 
-    QVariantMap objects = reply.value().toMap();
+    const auto objects = reply.value();
 
     int characteristicsFound = 0;
 
     for (auto it = objects.begin(); it != objects.end(); ++it) {
-        const QString objectPath = it.key();
+        const QString objectPath = it.key().path();
 
-        if (!objectPath.startsWith(devicePath())) {
+        if (!objectPath.startsWith(this->m_devicePath)) {
             continue;
         }
 
-        QVariantMap interfaces = it.value().toMap();
+        QMap interfaces = it.value();
 
         auto charIt = interfaces.find("org.bluez.GattCharacteristic1");
         if (charIt == interfaces.end()) {
@@ -177,12 +182,12 @@ QString Gamepad::findCharacteristicPath(const QString &uuid)
 
         characteristicsFound++;
 
-        QVariantMap properties = charIt.value().toMap();
+        QVariantMap properties = charIt.value();
 
         QString charUuid = properties.value("UUID").toString();
 
         if (!charUuid.isEmpty() && QString::compare(charUuid, uuid, Qt::CaseInsensitive) == 0) {
-            qInfo() << "Found characteristic" << uuid << "at" << objectPath << "for" << devicePath();
+            qInfo() << "Found characteristic" << uuid << "at" << objectPath << "for" << this->m_devicePath;
             return objectPath;
         }
     }

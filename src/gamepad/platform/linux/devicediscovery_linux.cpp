@@ -40,38 +40,31 @@
 #include <QtDBus/QDBusInterface>
 #include <QtDBus/QDBusArgument>
 #include <QtDBus/QDBusReply>
+#include <QtDBus/QDBusMetaType>
 #include <QDebug>
 
+using ManagedObjects =
+    QMap<QDBusObjectPath,
+        QMap<QString,
+            QMap<QString, QVariant>>>;
+
 DeviceDiscoveryLinux::DeviceDiscoveryLinux(QObject *parent)
-    : DeviceDiscovery(parent)
-{}
-
-void DeviceDiscoveryLinux::setup()
+    : DeviceDiscovery(parent), m_connection(QDBusConnection::systemBus())
 {
-    m_connection = new QDBusConnection(QDBusConnection::systemBus());
+    qDBusRegisterMetaType<ManagedObjects>();
 
-    if (!m_connection->isConnected()) {
-        qCritical() << "Failed to connect to system D-Bus:"
-                    << m_connection->lastError().message();
-        delete m_connection;
-        m_connection = nullptr;
+    if (!m_connection.isConnected()) {
+        qCritical() << "Failed to connect to system D-Bus:" << m_connection.lastError().message();
         return;
     }
-
-    qInfo() << "Connected to system D-Bus";
 }
 
-void DeviceDiscoveryLinux::cleanup()
+QStringList DeviceDiscoveryLinux::findGamepads()
 {
-    if (m_connection) {
-        delete m_connection;
-        m_connection = nullptr;
+    if (!m_connection.isConnected()) {
+        qCritical() << "DeviceDiscovery: Cannot search for gamepad devices when D-Bus connection is not established.";
+        return QStringList();
     }
-}
-
-QStringList DeviceDiscoveryLinux::findGamepads(void)
-{
-    qInfo() << "Searching for gamepad devices...";
 
     QStringList results;
 
@@ -79,20 +72,20 @@ QStringList DeviceDiscoveryLinux::findGamepads(void)
         "org.bluez",
         "/",
         "org.freedesktop.DBus.ObjectManager",
-        *m_connection
+        m_connection
     );
 
-    QDBusReply<QMap<QDBusObjectPath, QMap<QString, QVariantMap>>> reply = objectManager.call("GetManagedObjects");
+    QDBusReply<ManagedObjects> reply = objectManager.call("GetManagedObjects");
 
     if (!reply.isValid()) {
-        qCritical() << "Failed to get BlueZ managed objects: " << reply.error().message();
+        qCritical() << "DeviceDiscovery: Failed to get BlueZ managed objects: " << reply.error().message();
         return results;
     }
 
     const auto objects = reply.value();
 
     for (auto it = objects.begin(); it != objects.end(); ++it) {
-        const QString objectPath = it.key().path(); 
+        const QString objectPath = it.key().path();
         const auto interfaces = it.value();
 
         if (!interfaces.contains("org.bluez.Device1")) // we only care about Device1
@@ -104,7 +97,7 @@ QStringList DeviceDiscoveryLinux::findGamepads(void)
         const bool connected = deviceProps.value("Connected").toBool();
 
         if (connected && name == DEVICE_NAME) {
-            qInfo() << "Found connected gamepad:" << objectPath;
+            qInfo() << "DeviceDiscovery: Found connected gamepad:" << objectPath;
             results.append(objectPath);
         }
     }
@@ -118,21 +111,11 @@ bool DeviceDiscoveryLinux::isConnected(const QString &devicePath)
         "org.bluez",
         devicePath,
         "org.freedesktop.DBus.Properties",
-        *m_connection
+        m_connection
     );
 
-    QDBusReply<QVariant> reply = device.call(
-        "Get",
-        "org.bluez.Device1",
-        "Connected"
-    );
+    return device.property("Connected").toBool();
 
-    if (!reply.isValid()) {
-        qWarning() << "Connection check failed for " << devicePath << ": " << reply.error().message();
-        return false;
-    }
-
-    return reply.value().toBool();
 }
 
 bool DeviceDiscoveryLinux::startNotify(const QString &characteristicPath)
@@ -141,7 +124,7 @@ bool DeviceDiscoveryLinux::startNotify(const QString &characteristicPath)
         "org.bluez",
         characteristicPath,
         "org.bluez.GattCharacteristic1",
-        *m_connection
+        m_connection
     );
 
     QDBusReply<void> reply = charInterface.call("StartNotify");
@@ -160,7 +143,7 @@ bool DeviceDiscoveryLinux::stopNotify(const QString &characteristicPath)
         "org.bluez",
         characteristicPath,
         "org.bluez.GattCharacteristic1",
-        *m_connection
+        m_connection
     );
 
     QDBusReply<void> reply = charInterface.call("StopNotify");
@@ -174,7 +157,7 @@ bool DeviceDiscoveryLinux::stopNotify(const QString &characteristicPath)
 }
 
 // MARK: DeviceDiscoveryFactory
-DeviceDiscovery *DeviceDiscoveryFactory::create(QObject *parent)
+DeviceDiscovery* DeviceDiscoveryFactory::create(QObject *parent)
 {
     return new DeviceDiscoveryLinux(parent);
 }

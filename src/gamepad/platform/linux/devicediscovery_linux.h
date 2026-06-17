@@ -34,9 +34,6 @@ public:
     bool startNotify(const QString &characteristicPath) override;
     bool stopNotify(const QString &characteristicPath) override;
 
-    void setup() override;
-    void cleanup() override;
-
 private:
-    QDBusConnection *m_connection = nullptr;
+    QDBusConnection m_connection;
 };

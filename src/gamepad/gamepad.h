@@ -61,12 +61,17 @@ class Gamepad : public QObject
     Q_OBJECT
 
 public: // todo: what to be public and what to be private?
-    explicit Gamepad(std::unique_ptr<VirtualInputDevice> device, QObject *parent = nullptr);
+    explicit Gamepad(const QString devicePath, std::unique_ptr<VirtualInputDevice> device, QObject *parent = nullptr);
     ~Gamepad() override;
 
-    QString devicePath() const;
+    /**
+     * The OS-specific device path where the Bluetooth device is found
+     *
+     * Linux example: /org/bluez/hci0/dev_D2_C6_F7_00_76_A8
+     */
+    const QString m_devicePath;
 #ifdef __linux
-    /** example format: TODO */
+    /** example format: /org/bluez/hci0/dev_D2_C6_F7_00_76_A8/service000c/char000d */
     QString characteristicPath() const;
 #endif
 
