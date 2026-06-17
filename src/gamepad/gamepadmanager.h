@@ -38,6 +38,8 @@ public:
      */
     void initialize();
 
+    bool enablePassiveScanning();
+
 private slots:
     void onDeviceConnected(const QString &devicePath);
     void onDeviceDisconnected(const QString &devicePath);

@@ -156,6 +156,59 @@ bool DeviceDiscoveryLinux::stopNotify(const QString &characteristicPath)
     return true;
 }
 
+bool DeviceDiscoveryLinux::enablePassiveScanning() // todo: make this setPassiveScanning and allow unsubscribing from these D-Bus signals
+{
+    bool autoConnect = m_connection.connect(
+        "org.bluez",
+        "/",
+        "org.freedesktop.DBus.ObjectManager",
+        "InterfacesAdded",
+        this,
+        SLOT(onInterfacesAdded(QDBusObjectPath,QVariantMap))
+    );
+    if (!autoConnect) {
+        qWarning() << "DeviceDiscovery: Passive scanning failed: Could not subscribe to InterfacesAdded signal";
+        return false;
+    }
+
+    bool removedConnect = m_connection.connect(
+        "org.bluez",
+        "/",
+        "org.freedesktop.DBus.ObjectManager",
+        "InterfacesRemoved",
+        this,
+        SLOT(onInterfacesRemoved(QDBusObjectPath,QStringList))
+    );
+    if (!removedConnect) {
+        qWarning() << "DeviceDiscovery: Passive scanning failed: Could not subscribe to InterfacesRemoved signal";
+        return false;
+    }
+
+    return true;
+}
+
+void DeviceDiscoveryLinux::onInterfacesAdded(const QDBusObjectPath &path, const QVariantMap &interfaces)
+{
+    if (!interfaces.contains("org.bluez.Device1"))
+        return;
+
+    qInfo() << "Bluetooth device appeared:" << path.path();
+
+    qInfo() << interfaces;
+
+    // todo: implement
+}
+
+void DeviceDiscoveryLinux::onInterfacesRemoved(const QDBusObjectPath &path, const QStringList &interfaces)
+{
+    if (!interfaces.contains("org.bluez.Device1"))
+        return;
+
+    qInfo() << "Bluetooth device disappeared:" << path.path();
+
+    // todo: implement
+}
+
 // MARK: DeviceDiscoveryFactory
 DeviceDiscovery* DeviceDiscoveryFactory::create(QObject *parent)
 {

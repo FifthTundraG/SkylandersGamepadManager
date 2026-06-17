@@ -21,6 +21,7 @@
 #include "../devicediscovery.h"
 #include <QObject>
 #include <QtDBus/QDBusConnection>
+#include <QtDBus/QDBusObjectPath>
 
 class DeviceDiscoveryLinux : public DeviceDiscovery {
     Q_OBJECT
@@ -33,6 +34,12 @@ public:
 
     bool startNotify(const QString &characteristicPath) override;
     bool stopNotify(const QString &characteristicPath) override;
+
+    bool enablePassiveScanning() override;
+
+private slots:
+    void onInterfacesAdded(const QDBusObjectPath &path, const QVariantMap &interfaces);
+    void onInterfacesRemoved(const QDBusObjectPath &path, const QStringList &interfaces);
 
 private:
     QDBusConnection m_connection;

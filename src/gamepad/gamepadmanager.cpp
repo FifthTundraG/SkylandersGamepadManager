@@ -58,6 +58,15 @@ void GamepadManager::initialize()
     }
 }
 
+bool GamepadManager::enablePassiveScanning()
+{
+    if (!m_discovery) {
+        qWarning() << "GamepadManager: Cannot enable passive scanning if DeviceDiscovery is null";
+    }
+
+    return m_discovery->enablePassiveScanning();
+}
+
 void GamepadManager::onDeviceConnected(const QString &devicePath)
 {
     qInfo() << "Device connected:" << devicePath;

@@ -34,6 +34,8 @@ public:
     virtual bool startNotify(const QString &characteristicPath) = 0;
     virtual bool stopNotify(const QString &characteristicPath) = 0;
 
+    virtual bool enablePassiveScanning() = 0;
+
 signals:
     void deviceConnected(const QString &devicePath);
     void deviceDisconnected(const QString &devicePath);

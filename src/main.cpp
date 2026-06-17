@@ -36,5 +36,8 @@ int main(int argc, char *argv[])
 
     manager->initialize();
 
+    manager->enablePassiveScanning();
+    qInfo() << "Monitoring for new devices.";
+
     return app.exec();
 }
