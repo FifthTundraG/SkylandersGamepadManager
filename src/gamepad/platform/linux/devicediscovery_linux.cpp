@@ -31,7 +31,7 @@
  *      GNU General Public License for more details.
  */
 
-#include "device-discovery_linux.h"
+#include "devicediscovery_linux.h"
 #include "../../gamepad.h"
 #include <stdio.h>
 #include <stdlib.h>

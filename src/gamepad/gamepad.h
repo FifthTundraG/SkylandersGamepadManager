@@ -35,7 +35,7 @@
 
 #include <QtGlobal>
 #include <QString>
-#include "platform/virtual-input.h"
+#include "platform/virtualinput.h"
 
 #define CHARACTERISTIC_UUID "533e1541-3abe-f33f-cd00-594e8b0a8ea3"
 #define DEVICE_NAME "Skylanders GamePad"

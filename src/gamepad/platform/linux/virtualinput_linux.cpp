@@ -34,7 +34,7 @@
 #include <stdexcept>
 #include <QString>
 #include <QDebug>
-#include "virtual-input_linux.h"
+#include "virtualinput_linux.h"
 
 // MARK: LinuxVirtualInputDevice
 LinuxVirtualInputDevice::LinuxVirtualInputDevice(const QString &deviceName)

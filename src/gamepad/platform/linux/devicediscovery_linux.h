@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include "../device-discovery.h"
+#include "../devicediscovery.h"
 #include <QObject>
 #include <QtDBus/QDBusConnection>
 

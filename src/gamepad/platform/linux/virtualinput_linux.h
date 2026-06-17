@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include "../virtual-input.h"
+#include "../virtualinput.h"
 
 #include <libevdev/libevdev-uinput.h>
 
