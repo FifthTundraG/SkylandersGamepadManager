@@ -31,11 +31,8 @@ public:
     virtual QString getDevicePath() const = 0;
 };
 
+
 class VirtualInputFactory {
 public:
-    virtual ~VirtualInputFactory() = default;
-
-    virtual std::unique_ptr<VirtualInputDevice> createDevice(const QString &deviceName) = 0;
+    static std::unique_ptr<VirtualInputDevice> create(const QString &deviceName);
 };
-
-VirtualInputFactory* getVirtualInputFactory();

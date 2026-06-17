@@ -172,3 +172,9 @@ bool DeviceDiscoveryLinux::stopNotify(const QString &characteristicPath)
 
     return true;
 }
+
+// MARK: DeviceDiscoveryFactory
+DeviceDiscovery *DeviceDiscoveryFactory::create(QObject *parent)
+{
+    return new DeviceDiscoveryLinux(parent);
+}

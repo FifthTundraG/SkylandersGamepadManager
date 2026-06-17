@@ -41,3 +41,8 @@ signals:
     void deviceConnected(const QString &devicePath);
     void deviceDisconnected(const QString &devicePath);
 };
+
+class DeviceDiscoveryFactory {
+public:
+    static DeviceDiscovery *create(QObject *parent = nullptr);
+};

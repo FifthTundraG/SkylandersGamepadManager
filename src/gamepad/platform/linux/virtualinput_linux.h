@@ -64,13 +64,3 @@ private:
      */
     QString m_devicePath;
 };
-
-class LinuxVirtualInputFactory
-    : public VirtualInputFactory
-{
-public:
-    std::unique_ptr<VirtualInputDevice> createDevice(const QString &deviceName) override
-    {
-        return std::make_unique<LinuxVirtualInputDevice>(deviceName);
-    }
-};
