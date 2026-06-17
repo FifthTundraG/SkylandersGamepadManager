@@ -72,18 +72,25 @@ void GamepadManager::onDeviceDisconnected(const QString &devicePath)
 
 void GamepadManager::addGamepad(const QString &devicePath)
 {
-    if (m_gamepads.contains(devicePath)) {
-        return;
+    for (const auto &gamepad : m_gamepads) {
+        if (gamepad && gamepad->m_devicePath == devicePath) {
+            return;
+        }
     }
 
     auto device = VirtualInputFactory::create(DEVICE_NAME);
 
     QPointer<Gamepad> gamepad = new Gamepad(devicePath, std::move(device), this);
 
-    m_gamepads.insert(devicePath, gamepad);
+    m_gamepads.append(gamepad);
 }
 
 void GamepadManager::removeGamepad(const QString &devicePath)
 {
-    m_gamepads.remove(devicePath);
+    QMutableListIterator<QPointer<Gamepad>> i(m_gamepads);
+    while (i.hasNext()) {
+        if (i.next()->m_devicePath == devicePath) {
+            i.remove();
+        }
+    }
 }

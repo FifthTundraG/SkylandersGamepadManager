@@ -20,7 +20,7 @@
 
 #include <QObject>
 #include <QString>
-#include <QHash>
+#include <QList>
 
 #include "platform/devicediscovery.h"
 #include "gamepad.h"
@@ -48,5 +48,5 @@ private:
 
 private:
     DeviceDiscovery *m_discovery = nullptr;
-    QHash<QString, QPointer<Gamepad>> m_gamepads;
+    QList<QPointer<Gamepad>> m_gamepads;
 };
