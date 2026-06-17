@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop">
+  <id>@APPLICATION_ID@</id>
+  <name>@APPLICATION_DISPLAY_NAME@</name>
+  <summary>The first and only cross-platform application for using the Skylanders Trap Team mobile gamepad on Windows, macOS, or Linux</summary>
+  <developer id="io.github.fifthtundrag">
+    <name>FifthTundraG</name>
+  </developer>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-3.0-or-later</project_license>
+  <description>
+    <p>SkylandersGamepadManager is a graphical application that exposes a connected Skylanders: Trap Team mobile gamepad as a virtual input device that can be used in any application.</p>
+    <p>Features:</p>
+    <ul>
+      <li>Up to four controllers can be connected at once</li>
+      <li>Configuration of the pause button's action</li>
+      <li>Ability to run in the background via a tray icon</li>
+      <li>Passive scanning to find the gamepad</li>
+    </ul>
+  </description>
+  <screenshots>
+
+  </screenshots>
+  <releases>
+    <release version="@APPLICATION_VERSION_NAME@" date="@APPLICATION_BUILD_TIMESTAMP@"></release>
+  </releases>
+  <url type="homepage">https://github.com/FifthTundraG/SkylandersGamepadManager</url>
+  <url type="bugtracker">https://github.com/FifthTundraG/SkylandersGamepadManager/issues</url>
+  <url type="donation">https://ko-fi.com/FifthTundraG</url>
+  <url type="contact">https://github.com/FifthTundraG/SkylandersGamepadManager/issues</url>
+  <url type="vcs-browser">@APPLICATION_GIT@</url>
+  <url type="contribute">https://github.com/FifthTundraG/SkylandersGamepadManager/blob/main/CONTRIBUTING.md</url>
+  <launchable type="desktop-id">@Manager_AppID@.desktop</launchable>
+</component>

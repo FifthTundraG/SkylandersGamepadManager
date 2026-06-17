@@ -7,6 +7,19 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
+# MARK: Application Options
+set(APPLICATION_BINARY_NAME "SkylandersGamepadManager" CACHE STRING "Name of the Manager binary")
+
+set(APPLICATION_VERSION_MAJOR 0)
+set(APPLICATION_VERSION_MINOR 1)
+set(APPLICATION_VERSION_PATCH 0)
+
+set(APPLICATION_VERSION_NAME "${Manager_VERSION_MAJOR}.${Manager_VERSION_MINOR}.${Manager_VERSION_PATCH}")
+
+set(APPLICATION_BUILD_PLATFORM "unknown" CACHE STRING "A short string identifying the platform that this build was built for. Only used to display in the about dialog.")
+
+add_subdirectory(program_info)
+
 # MARK: Dependencies
 find_package(Qt6 REQUIRED COMPONENTS Quick)
 

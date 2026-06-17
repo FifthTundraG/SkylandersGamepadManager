@@ -1,0 +1,12 @@
+[Desktop Entry]
+Version=1.0
+Name=@APPLICATION_DISPLAY_NAME@
+Comment=Use the Skylanders Trap Team mobile gamepad
+Type=Application
+Terminal=false
+Exec=@APPLICATION_BINARY_NAME@ %U
+StartupNotify=true
+Icon=@APPLICATION_ID@
+Categories=Utility;Game;
+Keywords=gamepad;skylanders;mobile;trap;team;
+StartupWMClass=@APPLICATION_COMMON_NAME@
