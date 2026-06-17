@@ -16,32 +16,26 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import QtQuick
-import QtQuick.Controls
-import QtQuick.Layouts
+#pragma once
 
-ColumnLayout {
-    id: root
+#include <QtGlobal>
+#include <memory>
 
-    property string color: "red"
+class VirtualInputDevice {
+public:
+    virtual ~VirtualInputDevice() = default;
 
-    Layout.fillWidth: true
-    Layout.alignment: Qt.AlignHCenter
+    virtual int writeButtonEvent(uint buttonCode, bool pressed) = 0;
+    virtual int writeAxisEvent(uint axisCode, qint16 value) = 0;
+    virtual int sync() = 0;
+    virtual QString getDevicePath() const = 0;
+};
 
-    Rectangle {
-        width: 64
-        height: 64
-        Layout.alignment: Qt.AlignHCenter
+class VirtualInputFactory {
+public:
+    virtual ~VirtualInputFactory() = default;
 
-        color: root.color
-    }
+    virtual std::unique_ptr<VirtualInputDevice> createDevice(const QString &deviceName) = 0;
+};
 
-    Button {
-        text: "Configure"
-        Layout.alignment: Qt.AlignHCenter
-
-        onClicked: {
-            console.log("clicked button below controller box with color: "+root.color);
-        }
-    }
-}
+VirtualInputFactory* getVirtualInputFactory();

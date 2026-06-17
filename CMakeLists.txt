@@ -5,26 +5,26 @@ project(SkylandersGamepadManager VERSION 1.0 LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-if (LINUX)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+
+# MARK: Dependencies
+if (UNIX AND NOT APPLE)
     find_package(PkgConfig)
-    pkg_check_modules(LIBEVDEV REQUIRED libevdev)
-    pkg_check_modules(LIBUDEV REQUIRED libudev)
+    pkg_check_modules(LIBEVDEV REQUIRED IMPORTED_TARGET libevdev)
 endif()
 
 find_package(Qt6 REQUIRED COMPONENTS Quick)
 
 qt_standard_project_setup()
 
-qt_add_executable(SkylandersGamepadManager
-    src/main.cpp
-)
+# MARK: Add Project Files
+add_subdirectory(src)
 
-qt_add_qml_module(SkylandersGamepadManager
-    URI SkylandersGamepadManagerQML # note: the URI needs to be different from the project name because during build QML makes a directory in `build/` with the QML URI, so linking fails since a directory wit the project name already exists
-    VERSION 1.0
-    QML_FILES
-        src/Main.qml
-        src/ControllerBox.qml
-)
-
+# MARK: Linking
 target_link_libraries(SkylandersGamepadManager PRIVATE Qt6::Quick)
+
+if(UNIX AND NOT APPLE)
+    target_link_libraries(SkylandersGamepadManager PRIVATE
+        PkgConfig::LIBEVDEV
+    )
+endif()
