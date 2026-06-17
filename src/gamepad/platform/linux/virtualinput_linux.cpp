@@ -40,7 +40,6 @@
 LinuxVirtualInputDevice::LinuxVirtualInputDevice(const QString &deviceName)
 {
     libevdev *dev = libevdev_new();
-
     if (!dev) {
         throw std::runtime_error("Failed to allocate libevdev");
     }
@@ -70,41 +69,50 @@ LinuxVirtualInputDevice::LinuxVirtualInputDevice(const QString &deviceName)
     libevdev_enable_event_code(dev, EV_ABS, ABS_RX, &abs);
     libevdev_enable_event_code(dev, EV_ABS, ABS_RY, &abs);
 
-    if (libevdev_uinput_create_from_device(dev, LIBEVDEV_UINPUT_OPEN_MANAGED, &m_dev) < 0) {
+    if (libevdev_uinput_create_from_device(dev, LIBEVDEV_UINPUT_OPEN_MANAGED, &m_uinput) < 0) {
         libevdev_free(dev);
         throw std::runtime_error("Failed to create uinput device");
     }
 
     libevdev_free(dev);
 
-    qInfo() << "Virtual input device created at " << libevdev_uinput_get_devnode(m_dev);
+    m_devicePath = QString::fromUtf8(libevdev_uinput_get_devnode(m_uinput));
+
+    qInfo() << "Virtual input device created at " << m_devicePath;
 }
 
 LinuxVirtualInputDevice::~LinuxVirtualInputDevice()
 {
-    if (m_dev) {
-        libevdev_uinput_destroy(m_dev);
+    if (m_uinput) {
+        libevdev_uinput_destroy(m_uinput);
+        m_uinput = nullptr;
     }
 }
 
-int LinuxVirtualInputDevice::writeButtonEvent(uint buttonCode, bool pressed)
+bool LinuxVirtualInputDevice::writeButtonEvent(uint buttonCode, bool pressed)
 {
-    return libevdev_uinput_write_event(m_dev, EV_KEY, buttonCode, pressed);
+    if (!m_uinput) return false;
+
+    return libevdev_uinput_write_event(m_uinput, EV_KEY, buttonCode, pressed ? 1 : 0) == 0;
 }
 
-int LinuxVirtualInputDevice::writeAxisEvent(uint axis_code, qint16 value)
+bool LinuxVirtualInputDevice::writeAxisEvent(uint axisCode, qint16 value)
 {
-    return libevdev_uinput_write_event(m_dev, EV_ABS, axis_code, value);
+    if (!m_uinput) return false;
+
+    return libevdev_uinput_write_event(m_uinput, EV_ABS, axisCode, value) == 0;
 }
 
-int LinuxVirtualInputDevice::sync()
+bool LinuxVirtualInputDevice::sync()
 {
-    return libevdev_uinput_write_event(m_dev, EV_SYN, SYN_REPORT, 0);
+    if (!m_uinput) return false;
+
+    return libevdev_uinput_write_event(m_uinput, EV_SYN, SYN_REPORT, 0) == 0;
 }
 
 QString LinuxVirtualInputDevice::getDevicePath() const
 {
-    return QString::fromUtf8(libevdev_uinput_get_devnode(m_dev));
+    return m_devicePath;
 }
 
 // MARK: LinuxVirtualInputFactory

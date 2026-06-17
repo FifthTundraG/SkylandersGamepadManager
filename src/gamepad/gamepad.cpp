@@ -17,58 +17,178 @@
  */
 
 #include "gamepad.h"
+#include <QObject>
 // TODO: below include needs a platform-specific abstraction
 #include <linux/input-event-codes.h>
 
-void Gamepad::process_data(QByteArray data)
+#ifdef __linux__
+#include <QtDBus/QDBusInterface>
+#include <QtDBus/QDBusReply>
+#endif
+
+Gamepad::Gamepad(std::unique_ptr<VirtualInputDevice> device, QObject *parent)
+    : QObject(parent), m_inputDevice(std::move(device))
 {
-    if (!this->input_device) {
+#ifdef __linux__
+    // Find characteristic
+    m_characteristicPath = findCharacteristicPath(CHARACTERISTIC_UUID);
+
+    // send StartNotify call to BlueZ so it starts sending data to us
+    QDBusInterface iface(
+        "org.bluez",
+        m_characteristicPath,
+        "org.bluez.GattCharacteristic1",
+        QDBusConnection::systemBus()
+    );
+
+    QDBusReply<void> reply = iface.call("StartNotify");
+
+    if (!reply.isValid()) {
+        qWarning() << "StartNotify failed:" << reply.error().name() << reply.error().message();
+    }
+#endif
+
+    qInfo() << "Skylanders gamepad" << m_inputDevice->getDevicePath() << "ready!";
+}
+
+Gamepad::~Gamepad()
+{
+    resetState();
+}
+
+
+QString Gamepad::devicePath() const
+{
+    return m_inputDevice ? m_inputDevice->getDevicePath() : QString();
+}
+
+void Gamepad::resetState() // todo: is this necessary?
+{
+    m_prevButtons = 0;
+    m_prevTriggerL = 0;
+    m_prevTriggerR = 0;
+    m_prevShoulders = 0;
+}
+
+void Gamepad::processData(const QByteArray &data)
+{
+    if (!m_inputDevice) { // todo: add if data size is less than expected then return
         return;
     }
 
-    auto gamepadInputDevice = this->input_device;
+    const quint8 *value = reinterpret_cast<const quint8 *>(data.constData());
 
-    uint16_t buttons = data[8];
-    int16_t shoulders_and_pause = data[9];
-    int16_t trigger_l = data[10];
-    int16_t trigger_r = data[11];
-    int8_t right_x = (int8_t)data[12];
-    int8_t right_y = (int8_t)data[13];
-    int8_t left_x = (int8_t)data[14];
-    int8_t left_y = (int8_t)data[15];
+    const quint8 buttons = value[8];
+    const quint8 shouldersAndPause = value[9];
+    const quint8 triggerL = value[10];
+    const quint8 triggerR = value[11];
 
-    uint16_t changed = buttons ^ this->prev_buttons;
+    // sticks
+    const quint8 right_x = value[12];
+    const quint8 right_y = value[13];
+    const quint8 left_x = value[14];
+    const quint8 left_y = value[15];
 
-    if (changed & BUTTON_A_MASK) gamepadInputDevice->writeButtonEvent(BTN_A, (buttons & BUTTON_A_MASK) ? 1 : 0);
-    if (changed & BUTTON_B_MASK) gamepadInputDevice->writeButtonEvent(BTN_B, (buttons & BUTTON_B_MASK) ? 1 : 0);
-    if (changed & BUTTON_X_MASK) gamepadInputDevice->writeButtonEvent(BTN_X, (buttons & BUTTON_X_MASK) ? 1 : 0);
-    if (changed & BUTTON_Y_MASK) gamepadInputDevice->writeButtonEvent(BTN_Y, (buttons & BUTTON_Y_MASK) ? 1 : 0);
-    if (changed & DPAD_UP_MASK) gamepadInputDevice->writeButtonEvent(BTN_DPAD_UP, (buttons & DPAD_UP_MASK) ? 1 : 0);
-    if (changed & DPAD_DOWN_MASK) gamepadInputDevice->writeButtonEvent(BTN_DPAD_DOWN, (buttons & DPAD_DOWN_MASK) ? 1 : 0);
-    if (changed & DPAD_LEFT_MASK) gamepadInputDevice->writeButtonEvent(BTN_DPAD_LEFT, (buttons & DPAD_LEFT_MASK) ? 1 : 0);
-    if (changed & DPAD_RIGHT_MASK) gamepadInputDevice->writeButtonEvent(BTN_DPAD_RIGHT, (buttons & DPAD_RIGHT_MASK) ? 1 : 0);
+    if (buttons != m_prevButtons) {
+        const auto emitButton = [&](quint8 mask, uint code) {
+            bool pressed = buttons & mask;
+            m_inputDevice->writeButtonEvent(code, pressed);
+        };
 
-    int16_t shoulders_changed = shoulders_and_pause ^ this->prev_shoulders;
-    if (shoulders_changed & PAUSE_MASK) gamepadInputDevice->writeButtonEvent(BTN_START, (shoulders_and_pause & PAUSE_MASK) ? 1 : 0);
-    if (shoulders_changed & SHOULDER_LEFT_MASK) gamepadInputDevice->writeButtonEvent(BTN_TL, (shoulders_and_pause & SHOULDER_LEFT_MASK) ? 1 : 0);
-    if (shoulders_changed & SHOULDER_RIGHT_MASK) gamepadInputDevice->writeButtonEvent(BTN_TR, (shoulders_and_pause & SHOULDER_RIGHT_MASK) ? 1 : 0);
+        emitButton(BUTTON_A_MASK, BTN_A);
+        emitButton(BUTTON_B_MASK, BTN_B);
+        emitButton(BUTTON_X_MASK, BTN_X);
+        emitButton(BUTTON_Y_MASK, BTN_Y);
+        emitButton(DPAD_UP_MASK, BTN_DPAD_UP);
+        emitButton(DPAD_DOWN_MASK, BTN_DPAD_DOWN);
+        emitButton(DPAD_LEFT_MASK, BTN_DPAD_LEFT);
+        emitButton(DPAD_RIGHT_MASK, BTN_DPAD_RIGHT);
 
-    if (trigger_l != this->prev_trigger_l) {
-        gamepadInputDevice->writeButtonEvent(BTN_TL2, (trigger_l == TRIGGER_DOWN) ? 1 : 0);
+        m_prevButtons = buttons;
     }
-    if (trigger_r != this->prev_trigger_r) {
-        gamepadInputDevice->writeButtonEvent(BTN_TR2, (trigger_r == TRIGGER_DOWN) ? 1 : 0);
+
+    if (shouldersAndPause != m_prevShoulders) {
+        const auto emitButton = [&](quint8 mask, uint code) {
+            bool pressed = buttons & mask;
+            m_inputDevice->writeButtonEvent(code, pressed);
+        };
+
+        emitButton(PAUSE_MASK, BTN_START);
+        emitButton(SHOULDER_LEFT_MASK, BTN_TL);
+        emitButton(SHOULDER_RIGHT_MASK, BTN_TR);
     }
-    
-    gamepadInputDevice->writeAxisEvent(ABS_X, left_x);
-    gamepadInputDevice->writeAxisEvent(ABS_Y, -left_y);
-    gamepadInputDevice->writeAxisEvent(ABS_RX, right_x);
-    gamepadInputDevice->writeAxisEvent(ABS_RY, -right_y);
 
-    gamepadInputDevice->sync();
+    if (triggerL != m_prevTriggerL) {
+        m_inputDevice->writeButtonEvent(BTN_TL2, (triggerL == TRIGGER_DOWN) ? 1 : 0);
+    }
+    if (triggerR != m_prevTriggerR) {
+        m_inputDevice->writeButtonEvent(BTN_TR2, (triggerR == TRIGGER_DOWN) ? 1 : 0);
+    }
 
-    this->prev_buttons = buttons;
-    this->prev_shoulders = shoulders_and_pause;
-    this->prev_trigger_l = trigger_l;
-    this->prev_trigger_r = trigger_r;
+    m_inputDevice->writeAxisEvent(ABS_X, left_x);
+    m_inputDevice->writeAxisEvent(ABS_Y, -left_y);
+    m_inputDevice->writeAxisEvent(ABS_RX, right_x);
+    m_inputDevice->writeAxisEvent(ABS_RY, -right_y);
+
+    m_inputDevice->sync();
+
+    m_prevButtons = buttons;
+    m_prevShoulders = shouldersAndPause;
+    m_prevTriggerL = triggerL;
+    m_prevTriggerR = triggerR;
 }
+
+#ifdef __linux__
+QString Gamepad::findCharacteristicPath(const QString &uuid)
+{
+    qInfo() << "Searching for characteristic" << uuid << "on device" << devicePath();
+
+    QDBusInterface iface(
+        "org.bluez",
+        "/",
+        "org.freedesktop.DBus.ObjectManager",
+        QDBusConnection::systemBus()
+    );
+
+    QDBusReply<QVariant> reply = iface.call("GetManagedObjects");
+
+    if (!reply.isValid()) {
+        qWarning() << "Failed to get managed objects:" << reply.error().message();
+        return QString();
+    }
+
+    QVariantMap objects = reply.value().toMap();
+
+    int characteristicsFound = 0;
+
+    for (auto it = objects.begin(); it != objects.end(); ++it) {
+        const QString objectPath = it.key();
+
+        if (!objectPath.startsWith(devicePath())) {
+            continue;
+        }
+
+        QVariantMap interfaces = it.value().toMap();
+
+        auto charIt = interfaces.find("org.bluez.GattCharacteristic1");
+        if (charIt == interfaces.end()) {
+            continue;
+        }
+
+        characteristicsFound++;
+
+        QVariantMap properties = charIt.value().toMap();
+
+        QString charUuid = properties.value("UUID").toString();
+
+        if (!charUuid.isEmpty() && QString::compare(charUuid, uuid, Qt::CaseInsensitive) == 0) {
+            qInfo() << "Found characteristic" << uuid << "at" << objectPath << "for" << devicePath();
+            return objectPath;
+        }
+    }
+
+    qWarning() << "Characteristic not found! Found" << characteristicsFound << "total characteristics.";
+
+    return QString();
+}
+#endif

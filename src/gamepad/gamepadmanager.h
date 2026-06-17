@@ -18,24 +18,32 @@
 
 #pragma once
 
-#include <QtGlobal>
-#include <memory>
+#include <QObject>
+#include <QString>
+#include <QHash>
 
-class VirtualInputDevice {
+class GamepadManager : public QObject
+{
+    Q_OBJECT
+
 public:
-    virtual ~VirtualInputDevice() = default;
+    explicit GamepadManager(DeviceDiscovery *discovery, QObject *parent = nullptr);
+    ~GamepadManager() override;
 
-    virtual bool writeButtonEvent(uint buttonCode, bool pressed) = 0;
-    virtual bool writeAxisEvent(uint axisCode, qint16 value) = 0;
-    virtual bool sync() = 0;
-    virtual QString getDevicePath() const = 0;
+    /**
+     * Checks if devices are already connected before application startup, and if so then connects them
+     */
+    void initialize();
+
+private slots:
+    void onDeviceConnected(const QString &devicePath);
+    void onDeviceDisconnected(const QString &devicePath);
+
+private:
+    void addGamepad(const QString &devicePath);
+    void removeGamepad(const QString &devicePath);
+
+private:
+    DeviceDiscovery *m_discovery = nullptr;
+    QHash<QString, QPointer<Gamepad>> m_gamepads;
 };
-
-class VirtualInputFactory {
-public:
-    virtual ~VirtualInputFactory() = default;
-
-    virtual std::unique_ptr<VirtualInputDevice> createDevice(const QString &deviceName) = 0;
-};
-
-VirtualInputFactory* getVirtualInputFactory();

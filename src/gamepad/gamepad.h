@@ -55,15 +55,47 @@
 
 #define TRIGGER_DOWN 0xFF
 
-class Gamepad
+class Gamepad : public QObject
 {
-public: // todo: what to be public and what to be private?
-    VirtualInputDevice *input_device;
-    quint32 characteristic_properties_changed_id; // todo: this is D-Bus only right? where do we put it
-    quint32 disconnected_id; // todo: ^
-    quint16 prev_buttons;
-    qint16 prev_trigger_l, prev_trigger_r;
-    qint16 prev_shoulders;
+    Q_OBJECT
 
-    virtual void process_data(QByteArray data);
+public: // todo: what to be public and what to be private?
+    explicit Gamepad(std::unique_ptr<VirtualInputDevice> device, QObject *parent = nullptr);
+    ~Gamepad() override;
+
+    QString devicePath() const;
+#ifdef __linux
+    /** example format: TODO */
+    QString characteristicPath() const;
+#endif
+
+    void processData(const QByteArray &data);
+
+signals:
+    void disconnected();
+
+private:
+    void resetState();
+
+private:
+    std::unique_ptr<VirtualInputDevice> m_inputDevice;
+
+    // todo: this is D-Bus only right? where do we put it
+    quint32 m_characteristicChangedId = 0;
+    quint32 m_disconnectedId = 0;
+
+    // input state cache
+    quint16 m_prevButtons = 0;
+    qint16 m_prevTriggerL = 0;
+    qint16 m_prevTriggerR = 0;
+    qint16 m_prevShoulders = 0;
+
+#ifdef __linux__
+    /**
+     * @param uuid The characteristic UUID to search for
+     */
+    QString Gamepad::findCharacteristicPath(const QString &uuid);
+    /** Cached characteristic path to avoid repeated calls to findCharactertisticPath */
+    QString m_characteristicPath = nullptr;
+#endif
 };

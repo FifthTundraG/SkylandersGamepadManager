@@ -33,31 +33,36 @@ public:
      * @param buttonCode Event code (ABS_X, REL_Y, etc.)
      * @param pressed The event value
      *
-     * @returns 0 on success or a negative errno on error
+     * @returns true on success or false on error
      */
-    int writeButtonEvent(uint buttonCode, bool pressed) override;
+    bool writeButtonEvent(uint buttonCode, bool pressed) override;
     /**
      * Writes an axis event to the virtual input device.
      *
      * @param axisCode Event code (ABS_X, REL_Y, etc.)
      * @param value The event value
      *
-     * @returns 0 on success or a negative errno on error
+     * @returns true on success or false on error
      */
-    int writeAxisEvent(uint axisCode, qint16 value) override;
+    bool writeAxisEvent(uint axisCode, qint16 value) override;
     /**
      * Writes a sync event to the virtual input device.
      *
-     * @returns 0 on success or a negative errno on error
+     * @returns true on success or false on error
      */
-    int sync() override;
+    bool sync() override;
+
     /**
      * @returns The device node for this device, in the form of /dev/input/eventN
      */
     QString getDevicePath() const override;
 
 private:
-    libevdev_uinput *m_dev = nullptr;
+    libevdev_uinput *m_uinput = nullptr;
+    /**
+     * Cached device path to avoid repeated calls to libevdev_uinput_get_devnode(m_uinput)
+     */
+    QString m_devicePath;
 };
 
 class LinuxVirtualInputFactory
