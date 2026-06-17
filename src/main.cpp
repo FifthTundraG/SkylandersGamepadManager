@@ -18,7 +18,8 @@
 
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
-#include "gamepad/gamepad.h"
+#include "gamepad/gamepadmanager.h"
+#include "gamepad/platform/devicediscovery.h"
 
 int main(int argc, char *argv[])
 {
@@ -27,16 +28,9 @@ int main(int argc, char *argv[])
     QQmlApplicationEngine engine;
     engine.loadFromModule("SkylandersGamepadManagerQML", "Main");
 
-    return app.exec();
-}
-
-int setup_gamepad_manager()
-{
     qInfo() << "Setting up gamepad manager...";
 
-    QList<Gamepad> gamepads = QList<Gamepad>();
+    GamepadManager *manager = new GamepadManager(DeviceDiscoveryFactory::create());
 
-    // TODO: implement
-
-    return 0;
+    return app.exec();
 }

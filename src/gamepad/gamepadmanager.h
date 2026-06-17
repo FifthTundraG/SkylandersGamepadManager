@@ -22,6 +22,9 @@
 #include <QString>
 #include <QHash>
 
+#include "platform/devicediscovery.h"
+#include "gamepad.h"
+
 class GamepadManager : public QObject
 {
     Q_OBJECT

@@ -116,7 +116,7 @@ QString LinuxVirtualInputDevice::getDevicePath() const
 }
 
 // MARK: VirtualInputFactory
-std::unique_ptr<VirtualInputDevice> create(const QString &deviceName)
+std::unique_ptr<VirtualInputDevice> VirtualInputFactory::create(const QString &deviceName)
 {
-    return std::make_unique<VirtualInputDevice>(new LinuxVirtualInputDevice(deviceName));
+    return std::make_unique<LinuxVirtualInputDevice>(deviceName);
 }

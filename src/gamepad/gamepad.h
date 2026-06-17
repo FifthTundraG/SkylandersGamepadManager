@@ -34,6 +34,7 @@
 #pragma once
 
 #include <QtGlobal>
+#include <QObject>
 #include <QString>
 #include "platform/virtualinput.h"
 
@@ -94,7 +95,7 @@ private:
     /**
      * @param uuid The characteristic UUID to search for
      */
-    QString Gamepad::findCharacteristicPath(const QString &uuid);
+    QString findCharacteristicPath(const QString &uuid);
     /** Cached characteristic path to avoid repeated calls to findCharactertisticPath */
     QString m_characteristicPath = nullptr;
 #endif
