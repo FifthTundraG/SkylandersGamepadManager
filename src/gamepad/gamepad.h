@@ -37,6 +37,7 @@
 #include "platform/virtual-input.h"
 
 #define CHARACTERISTIC_UUID "533e1541-3abe-f33f-cd00-594e8b0a8ea3"
+#define DEVICE_NAME "Skylanders GamePad"
 
 typedef struct {
     char *device_path;

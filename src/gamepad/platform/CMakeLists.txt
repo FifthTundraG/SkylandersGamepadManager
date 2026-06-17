@@ -5,6 +5,7 @@ target_include_directories(skylanders_gamepad_lib INTERFACE
 
 target_sources(skylanders_gamepad_lib INTERFACE
     ${CMAKE_CURRENT_SOURCE_DIR}/virtual-input.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/device-discovery.h
 )
 
 # Include platform-specific implementations

@@ -8,12 +8,14 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 # MARK: Dependencies
+find_package(Qt6 REQUIRED COMPONENTS Quick)
+
 if (UNIX AND NOT APPLE)
     find_package(PkgConfig)
     pkg_check_modules(LIBEVDEV REQUIRED IMPORTED_TARGET libevdev)
-endif()
 
-find_package(Qt6 REQUIRED COMPONENTS Quick)
+    find_package(Qt6 REQUIRED COMPONENTS Core DBus)
+endif()
 
 qt_standard_project_setup()
 
@@ -26,5 +28,6 @@ target_link_libraries(SkylandersGamepadManager PRIVATE Qt6::Quick)
 if(UNIX AND NOT APPLE)
     target_link_libraries(SkylandersGamepadManager PRIVATE
         PkgConfig::LIBEVDEV
+        Qt6DBus
     )
 endif()

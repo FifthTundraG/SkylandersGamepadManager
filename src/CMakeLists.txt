@@ -14,6 +14,3 @@ qt_add_qml_module(SkylandersGamepadManager
 )
 
 add_subdirectory(gamepad)
-
-# Linking
-target_link_libraries(SkylandersGamepadManager PRIVATE Qt6::Quick)
