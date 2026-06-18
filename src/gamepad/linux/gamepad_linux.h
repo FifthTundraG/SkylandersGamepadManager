@@ -38,10 +38,9 @@ public: // todo: what to be public and what to be private?
      * Linux example: /org/bluez/hci0/dev_D2_C6_F7_00_76_A8
      */
     const QString m_devicePath;
-#ifdef __linux
+
     /** example format: /org/bluez/hci0/dev_D2_C6_F7_00_76_A8/service000c/char000d */
     QString getCharacteristicPath() const;
-#endif
 
     void processData(const QByteArray &data);
 
@@ -60,12 +59,10 @@ private:
     qint16 m_prevTriggerR = 0;
     qint16 m_prevShoulders = 0;
 
-#ifdef __linux__
     /**
      * @param uuid The characteristic UUID to search for
      */
     QString findCharacteristicPath(const QString &uuid);
     /** Cached characteristic path to avoid repeated calls to findCharactertisticPath */
     QString m_characteristicPath = nullptr;
-#endif
 };
