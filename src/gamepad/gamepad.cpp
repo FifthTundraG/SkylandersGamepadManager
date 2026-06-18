@@ -18,6 +18,7 @@
 
 #include "gamepad.h"
 #include <QObject>
+#include <QDebug>
 // TODO: below include needs a platform-specific abstraction
 #include <linux/input-event-codes.h>
 
@@ -43,11 +44,11 @@ void Gamepad::resetState() // todo: is this necessary?
 
 void Gamepad::processData(const QByteArray &data)
 {
-    if (!m_inputDevice) { // todo: add if data size is less than expected then return
+    if (!m_inputDevice) {
         return;
     }
 
-    const quint8 *value = reinterpret_cast<const quint8 *>(data.constData());
+    const qint8 *value = reinterpret_cast<const qint8 *>(data.constData());
 
     const quint8 buttons = value[8];
     const quint8 shouldersAndPause = value[9];
@@ -55,10 +56,10 @@ void Gamepad::processData(const QByteArray &data)
     const quint8 triggerR = value[11];
 
     // sticks
-    const quint8 right_x = value[12];
-    const quint8 right_y = value[13];
-    const quint8 left_x = value[14];
-    const quint8 left_y = value[15];
+    const qint8 right_x = value[12];
+    const qint8 right_y = value[13];
+    const qint8 left_x = value[14];
+    const qint8 left_y = value[15];
 
     if (buttons != m_prevButtons) {
         const auto emitButton = [&](quint8 mask, uint code) {
@@ -74,13 +75,11 @@ void Gamepad::processData(const QByteArray &data)
         emitButton(DPAD_DOWN_MASK, BTN_DPAD_DOWN);
         emitButton(DPAD_LEFT_MASK, BTN_DPAD_LEFT);
         emitButton(DPAD_RIGHT_MASK, BTN_DPAD_RIGHT);
-
-        m_prevButtons = buttons;
     }
 
     if (shouldersAndPause != m_prevShoulders) {
         const auto emitButton = [&](quint8 mask, uint code) {
-            bool pressed = buttons & mask;
+            bool pressed = shouldersAndPause & mask;
             m_inputDevice->writeButtonEvent(code, pressed);
         };
 
