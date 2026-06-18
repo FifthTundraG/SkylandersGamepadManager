@@ -6,14 +6,22 @@ target_include_directories(skylanders_gamepad_lib INTERFACE
 )
 
 target_sources(skylanders_gamepad_lib INTERFACE
+    # platform-dependent sources
+    ${CMAKE_CURRENT_SOURCE_DIR}/virtualinput.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/devicediscovery.h
     ${CMAKE_CURRENT_SOURCE_DIR}/gamepad.h
     ${CMAKE_CURRENT_SOURCE_DIR}/gamepad.cpp
+
+    # platform-agonistic sources
     ${CMAKE_CURRENT_SOURCE_DIR}/gamepadmanager.h
     ${CMAKE_CURRENT_SOURCE_DIR}/gamepadmanager.cpp
 )
 
 # Include platform-specific implementations
-add_subdirectory(platform)
+if(UNIX AND NOT APPLE)
+    add_subdirectory(linux)
+endif()
+
 
 # Link gamepad to main executable
 target_link_libraries(SkylandersGamepadManager PRIVATE skylanders_gamepad_lib)

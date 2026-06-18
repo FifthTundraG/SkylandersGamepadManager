@@ -22,7 +22,7 @@
 #include <QString>
 #include <QList>
 
-#include "platform/devicediscovery.h"
+#include "devicediscovery.h"
 #include "gamepad.h"
 
 class GamepadManager : public QObject

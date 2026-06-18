@@ -21,37 +21,11 @@
 // TODO: below include needs a platform-specific abstraction
 #include <linux/input-event-codes.h>
 
-#ifdef __linux__
-#include <QtDBus/QDBusInterface>
-#include <QtDBus/QDBusReply>
-#include <QtDBus/QDBusMetaType>
-#endif
-
 Gamepad::Gamepad(const QString devicePath, std::unique_ptr<VirtualInputDevice> device, QObject *parent)
     : QObject(parent),
       m_devicePath(devicePath),
       m_inputDevice(std::move(device))
 {
-#ifdef __linux__
-    // Find characteristic
-    m_characteristicPath = findCharacteristicPath(CHARACTERISTIC_UUID);
-
-    // send StartNotify call to BlueZ so it starts sending data to us
-    QDBusInterface iface(
-        "org.bluez",
-        m_characteristicPath,
-        "org.bluez.GattCharacteristic1",
-        QDBusConnection::systemBus()
-    );
-
-    QDBusReply<void> reply = iface.call("StartNotify");
-
-    if (!reply.isValid()) {
-        qWarning() << "StartNotify failed:" << reply.error().name() << reply.error().message();
-    }
-#endif
-
-    qInfo() << "Skylanders gamepad" << m_inputDevice->getDevicePath() << "ready!";
 }
 
 Gamepad::~Gamepad()
@@ -134,66 +108,3 @@ void Gamepad::processData(const QByteArray &data)
     m_prevTriggerL = triggerL;
     m_prevTriggerR = triggerR;
 }
-
-#ifdef __linux__
-using ManagedObjects =
-    QMap<QDBusObjectPath,
-        QMap<QString,
-            QMap<QString, QVariant>>>;
-
-QString Gamepad::findCharacteristicPath(const QString &uuid)
-{
-    qInfo() << "Searching for characteristic" << uuid << "on device" << this->m_devicePath;
-
-    // we must register managed objects return value before any call
-    qDBusRegisterMetaType<ManagedObjects>();
-
-    QDBusInterface iface(
-        "org.bluez",
-        "/",
-        "org.freedesktop.DBus.ObjectManager",
-        QDBusConnection::systemBus()
-    );
-
-    QDBusReply<ManagedObjects> reply = iface.call("GetManagedObjects");
-
-    if (!reply.isValid()) {
-        qWarning() << "Failed to get managed objects:" << reply.error().message();
-        return QString();
-    }
-
-    const auto objects = reply.value();
-
-    int characteristicsFound = 0;
-
-    for (auto it = objects.begin(); it != objects.end(); ++it) {
-        const QString objectPath = it.key().path();
-
-        if (!objectPath.startsWith(this->m_devicePath)) {
-            continue;
-        }
-
-        QMap interfaces = it.value();
-
-        auto charIt = interfaces.find("org.bluez.GattCharacteristic1");
-        if (charIt == interfaces.end()) {
-            continue;
-        }
-
-        characteristicsFound++;
-
-        QVariantMap properties = charIt.value();
-
-        QString charUuid = properties.value("UUID").toString();
-
-        if (!charUuid.isEmpty() && QString::compare(charUuid, uuid, Qt::CaseInsensitive) == 0) {
-            qInfo() << "Found characteristic" << uuid << "at" << objectPath << "for" << this->m_devicePath;
-            return objectPath;
-        }
-    }
-
-    qWarning() << "Characteristic not found! Found" << characteristicsFound << "total characteristics.";
-
-    return QString();
-}
-#endif

@@ -32,7 +32,8 @@
  */
 
 #include "devicediscovery_linux.h"
-#include "../../gamepad.h"
+#include "../gamepad.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -42,6 +43,7 @@
 #include <QtDBus/QDBusReply>
 #include <QtDBus/QDBusMetaType>
 #include <QDebug>
+#include <gamepad.h>
 
 using ManagedObjects =
     QMap<QDBusObjectPath,
