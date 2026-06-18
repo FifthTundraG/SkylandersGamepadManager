@@ -26,24 +26,44 @@ ApplicationWindow {
     height: 325
     title: "Skylanders Gamepad Manager"
 
-    GridLayout {
-        columns: 4
-        anchors.left: parent.left
-        anchors.right: parent.right
-        anchors.top: parent.top
-        anchors.margins: 4
+    Column {
+        anchors {
+            top: parent.top
+            left: parent.left
+            right: parent.right
+            margins: 8
+        }
 
-        ControllerBox {
-            color: "red"
+        spacing: 2
+
+        Label {
+            text: "Connected Gamepads"
+            // bottomPadding: 2
         }
-        ControllerBox {
-            color: "green"
+        Frame {
+            width: parent.width
+
+            GridLayout {
+                width: parent.width
+                columns: 4
+
+                ControllerBox {
+                    color: "red"
+                }
+                ControllerBox {
+                    color: "green"
+                }
+                ControllerBox {
+                    color: "blue"
+                }
+                ControllerBox {
+                    color: "purple"
+                }
+            }
         }
-        ControllerBox {
-            color: "blue"
-        }
-        ControllerBox {
-            color: "purple"
-        }
+    }
+
+    Item { // absorbs all extra vertical space, keeping the label and frame pinned to the top
+        Layout.fillHeight: true
     }
 }
