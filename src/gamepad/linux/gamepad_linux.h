@@ -21,6 +21,7 @@
 #include <QtGlobal>
 #include <QObject>
 #include <QString>
+#include <QtDBus/QDBusMessage>
 #include "virtualinput.h"
 #include "../gamepad.h"
 
@@ -30,35 +31,16 @@ class GamepadLinux : public Gamepad
 
 public: // todo: what to be public and what to be private?
     explicit GamepadLinux(const QString devicePath, std::unique_ptr<VirtualInputDevice> device, QObject *parent = nullptr);
-    ~GamepadLinux() = default;
-
-    /**
-     * The OS-specific device path where the Bluetooth device is found
-     *
-     * Linux example: /org/bluez/hci0/dev_D2_C6_F7_00_76_A8
-     */
-    const QString m_devicePath;
+    ~GamepadLinux() override;
 
     /** example format: /org/bluez/hci0/dev_D2_C6_F7_00_76_A8/service000c/char000d */
     QString getCharacteristicPath() const;
 
-    void processData(const QByteArray &data);
+private slots:
+    void onCharacteristicPropertiesChanged(const QString &interfaceName, const QVariantMap &changedProperties, const QStringList &invalidatedProperties, const QDBusMessage &message);
 
-signals:
-    void disconnected();
-
-private:
-    void resetState();
 
 private:
-    std::unique_ptr<VirtualInputDevice> m_inputDevice;
-
-    // input state cache
-    quint16 m_prevButtons = 0;
-    qint16 m_prevTriggerL = 0;
-    qint16 m_prevTriggerR = 0;
-    qint16 m_prevShoulders = 0;
-
     /**
      * @param uuid The characteristic UUID to search for
      */

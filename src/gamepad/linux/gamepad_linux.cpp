@@ -43,6 +43,52 @@ GamepadLinux::GamepadLinux(const QString devicePath, std::unique_ptr<VirtualInpu
     if (!reply.isValid()) {
         qWarning() << "StartNotify failed:" << reply.error().name() << reply.error().message();
     }
+
+    // connect to characteristic changes so we can send data to virtual gamepad
+    bool success = QDBusConnection::systemBus().connect(
+        "org.bluez",
+        m_characteristicPath,
+        "org.freedesktop.DBus.Properties",
+        "PropertiesChanged",
+        this,
+        SLOT(onCharacteristicPropertiesChanged(QString,QVariantMap,QStringList,QDBusMessage))
+    );
+
+    if (!success) {
+        qWarning() << "Failed to connect characteristic PropertiesChanged signal";
+    }
+}
+
+GamepadLinux::~GamepadLinux()
+{
+    QDBusConnection::systemBus().disconnect(
+        "org.bluez",
+        m_characteristicPath,
+        "org.freedesktop.DBus.Properties",
+        "PropertiesChanged",
+        this,
+        SLOT(onCharacteristicPropertiesChanged(QString,QVariantMap,QStringList,QDBusMessage))
+    );
+}
+
+void GamepadLinux::onCharacteristicPropertiesChanged(const QString &interfaceName, const QVariantMap &changedProperties, const QStringList &invalidatedProperties, const QDBusMessage &message)
+{
+    if (interfaceName != "org.bluez.GattCharacteristic1") {
+        return;
+    }
+
+    const QString objectPath = message.path();
+
+    if (m_characteristicPath != objectPath) {
+        return;
+    }
+
+    auto it = changedProperties.find("Value");
+    if (it == changedProperties.end()) {
+        return;
+    }
+
+    this->processData(it.value().toByteArray());
 }
 
 using ManagedObjects =
@@ -104,4 +150,9 @@ QString GamepadLinux::findCharacteristicPath(const QString &uuid)
     qWarning() << "Characteristic not found! Found" << characteristicsFound << "total characteristics.";
 
     return QString();
+}
+
+Gamepad* GamepadFactory::create(const QString devicePath, std::unique_ptr<VirtualInputDevice> device, QObject *parent)
+{
+    return new GamepadLinux(devicePath, std::move(device), parent);
 }

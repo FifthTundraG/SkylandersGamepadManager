@@ -208,7 +208,7 @@ void DeviceDiscoveryLinux::onInterfacesRemoved(const QDBusObjectPath &path, cons
 
     qInfo() << "Bluetooth device disappeared:" << path.path();
 
-    // todo: implement
+    // todo: implement (remove gamepad)
 }
 
 // MARK: DeviceDiscoveryFactory

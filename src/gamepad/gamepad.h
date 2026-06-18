@@ -88,3 +88,8 @@ private:
     qint16 m_prevTriggerR = 0;
     qint16 m_prevShoulders = 0;
 };
+
+class GamepadFactory {
+public:
+    static Gamepad* create(const QString devicePath, std::unique_ptr<VirtualInputDevice> device, QObject *parent = nullptr);
+};
