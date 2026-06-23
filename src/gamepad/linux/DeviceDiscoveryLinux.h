@@ -18,37 +18,29 @@
 
 #pragma once
 
+#include "../DeviceDiscovery.h"
 #include <QObject>
-#include <QString>
-#include <QList>
+#include <QtDBus/QDBusConnection>
+#include <QtDBus/QDBusObjectPath>
 
-#include "devicediscovery.h"
-#include "gamepad.h"
-
-class GamepadManager : public QObject
-{
+class DeviceDiscoveryLinux : public DeviceDiscovery {
     Q_OBJECT
 
 public:
-    explicit GamepadManager(QObject *parent = nullptr);
-    ~GamepadManager() override;
+    explicit DeviceDiscoveryLinux(QObject *parent = nullptr);
 
-    /**
-     * Checks if devices are already connected before application startup, and if so then connects them
-     */
-    void initialize();
+    QStringList findGamepads() override;
+    bool isConnected(const QString &devicePath) override;
 
-    bool enablePassiveScanning();
+    bool startNotify(const QString &characteristicPath) override;
+    bool stopNotify(const QString &characteristicPath) override;
+
+    bool enablePassiveScanning() override;
 
 private slots:
-    void onDeviceConnected(const QString &devicePath);
-    void onDeviceDisconnected(const QString &devicePath);
+    void onInterfacesAdded(const QDBusObjectPath &path, const QVariantMap &interfaces);
+    void onInterfacesRemoved(const QDBusObjectPath &path, const QStringList &interfaces);
 
 private:
-    void addGamepad(const QString &devicePath);
-    void removeGamepad(const QString &devicePath);
-
-private:
-    DeviceDiscovery *m_discovery = nullptr;
-    QList<QPointer<Gamepad>> m_gamepads;
+    QDBusConnection m_connection;
 };

@@ -16,7 +16,7 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "gamepad_linux.h"
+#include "GamepadLinux.h"
 #include <QObject>
 #include <linux/input-event-codes.h>
 

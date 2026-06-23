@@ -23,8 +23,8 @@
 #include <QString>
 #include <QtDBus/QDBusMessage>
 #include <QtDBus/QDBusConnection>
-#include "virtualinput.h"
-#include "../gamepad.h"
+#include "../virtualinput.h"
+#include "../Gamepad.h"
 
 class GamepadLinux : public Gamepad
 {

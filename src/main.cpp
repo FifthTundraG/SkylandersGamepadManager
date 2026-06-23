@@ -18,8 +18,8 @@
 
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
-#include "gamepad/gamepadmanager.h"
-#include "gamepad/devicediscovery.h"
+#include "gamepad/GamepadManager.h"
+#include "gamepad/DeviceDiscovery.h"
 
 int main(int argc, char *argv[])
 {

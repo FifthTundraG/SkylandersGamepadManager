@@ -16,7 +16,7 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "gamepad.h"
+#include "Gamepad.h"
 #include <QObject>
 #include <QDebug>
 #include <QColor>

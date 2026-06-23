@@ -31,8 +31,7 @@
  *      GNU General Public License for more details.
  */
 
-#include "devicediscovery_linux.h"
-#include "../gamepad.h"
+#include "DeviceDiscoveryLinux.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -43,7 +42,7 @@
 #include <QtDBus/QDBusReply>
 #include <QtDBus/QDBusMetaType>
 #include <QDebug>
-#include <gamepad.h>
+#include "../Gamepad.h"
 
 using ManagedObjects =
     QMap<QDBusObjectPath,

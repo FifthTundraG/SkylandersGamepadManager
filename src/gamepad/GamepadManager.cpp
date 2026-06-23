@@ -16,13 +16,13 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "gamepadmanager.h"
+#include "GamepadManager.h"
 
 #include <QDebug>
 #include <QPointer>
 
-#include "gamepad.h"
-#include "devicediscovery.h"
+#include "Gamepad.h"
+#include "DeviceDiscovery.h"
 
 GamepadManager::GamepadManager(QObject *parent)
     : QObject(parent)
