@@ -71,7 +71,19 @@ public: // todo: what to be public and what to be private?
      */
     const QString m_devicePath;
 
-    void processData(const QByteArray &data);
+    virtual void processData(const QByteArray &data);
+
+    /**
+     * Get the mac address of the Bluetooth gamepad
+     *
+     * If this is not overwriten in an implementation then it will return NULL
+     */
+    virtual QString getMacAddress() const;
+
+    /**
+     * Get the color to use in the background of the UI. Based on the first octet of the MAC address of the gamepad.
+     */
+    QColor getColor() const;
 
 signals:
     void disconnected();

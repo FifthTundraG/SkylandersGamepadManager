@@ -152,6 +152,18 @@ QString GamepadLinux::findCharacteristicPath(const QString &uuid)
     return QString();
 }
 
+QString GamepadLinux::getMacAddress() const
+{
+    QDBusInterface device(
+        "org.bluez",
+        this->m_devicePath,
+        "org.bluez.Device1",
+        QDBusConnection::systemBus()
+    );
+
+    return device.property("Address").toString();
+}
+
 Gamepad* GamepadFactory::create(const QString devicePath, std::unique_ptr<VirtualInputDevice> device, QObject *parent)
 {
     return new GamepadLinux(devicePath, std::move(device), parent);

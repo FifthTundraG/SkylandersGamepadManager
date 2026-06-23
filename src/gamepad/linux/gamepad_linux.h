@@ -36,6 +36,8 @@ public: // todo: what to be public and what to be private?
     /** example format: /org/bluez/hci0/dev_D2_C6_F7_00_76_A8/service000c/char000d */
     QString getCharacteristicPath() const;
 
+    QString getMacAddress() const;
+
 private slots:
     void onCharacteristicPropertiesChanged(const QString &interfaceName, const QVariantMap &changedProperties, const QStringList &invalidatedProperties, const QDBusMessage &message);
 

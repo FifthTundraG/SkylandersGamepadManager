@@ -19,6 +19,7 @@
 #include "gamepad.h"
 #include <QObject>
 #include <QDebug>
+#include <QColor>
 // TODO: below include needs a platform-specific abstraction
 #include <linux/input-event-codes.h>
 
@@ -106,4 +107,19 @@ void Gamepad::processData(const QByteArray &data)
     m_prevShoulders = shouldersAndPause;
     m_prevTriggerL = triggerL;
     m_prevTriggerR = triggerR;
+}
+
+QColor Gamepad::getColor() const
+{
+    auto mac = this->getMacAddress();
+
+    bool ok;
+    int firstOctet = mac.section(':', 0, 0).toInt(&ok, 16);
+
+    return QColor::fromHsv(firstOctet, 64, 255);
+}
+
+QString Gamepad::getMacAddress() const
+{
+    return NULL;
 }
