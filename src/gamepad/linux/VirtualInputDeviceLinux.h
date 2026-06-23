@@ -18,14 +18,17 @@
 
 #pragma once
 
-#include "../virtualinput.h"
+#include "../VirtualInputDevice.h"
 
 #include <libevdev/libevdev-uinput.h>
+#include <QObject>
 
-class LinuxVirtualInputDevice : public VirtualInputDevice {
+class VirtualInputDeviceLinux : public VirtualInputDevice {
+    Q_OBJECT
+
 public:
-    explicit LinuxVirtualInputDevice(const QString &deviceName);
-    ~LinuxVirtualInputDevice() override;
+    explicit VirtualInputDeviceLinux(const QString &deviceName);
+    ~VirtualInputDeviceLinux() override;
 
     /**
      * Writes a button event to the virtual input device.

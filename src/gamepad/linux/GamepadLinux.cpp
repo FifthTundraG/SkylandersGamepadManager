@@ -24,8 +24,8 @@
 #include <QtDBus/QDBusReply>
 #include <QtDBus/QDBusMetaType>
 
-GamepadLinux::GamepadLinux(const QString devicePath, std::unique_ptr<VirtualInputDevice> device, QObject *parent)
-    : Gamepad(devicePath, std::move(device), parent), m_connection(QDBusConnection::systemBus())
+GamepadLinux::GamepadLinux(const QString devicePath, QPointer<VirtualInputDevice> device, QObject *parent)
+    : Gamepad(devicePath, device, parent), m_connection(QDBusConnection::systemBus())
 {
     // Find characteristic
     m_characteristicPath = findCharacteristicPath(CHARACTERISTIC_UUID);
@@ -164,7 +164,7 @@ QString GamepadLinux::getMacAddress() const
     return device.property("Address").toString();
 }
 
-Gamepad* GamepadFactory::create(const QString devicePath, std::unique_ptr<VirtualInputDevice> device, QObject *parent)
+Gamepad* GamepadFactory::create(const QString devicePath, QPointer<VirtualInputDevice> device, QObject *parent)
 {
-    return new GamepadLinux(devicePath, std::move(device), parent);
+    return new GamepadLinux(devicePath, device, parent);
 }

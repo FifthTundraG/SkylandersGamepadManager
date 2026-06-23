@@ -1,6 +1,6 @@
 target_sources(skylanders_gamepad_lib INTERFACE
-    ${CMAKE_CURRENT_SOURCE_DIR}/virtualinput_linux.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/virtualinput_linux.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/VirtualInputDeviceLinux.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/VirtualInputDeviceLinux.h
     ${CMAKE_CURRENT_SOURCE_DIR}/DeviceDiscoveryLinux.h
     ${CMAKE_CURRENT_SOURCE_DIR}/DeviceDiscoveryLinux.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/GamepadLinux.h

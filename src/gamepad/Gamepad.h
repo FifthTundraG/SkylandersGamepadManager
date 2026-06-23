@@ -36,7 +36,8 @@
 #include <QtGlobal>
 #include <QObject>
 #include <QString>
-#include "virtualinput.h"
+#include <QPointer>
+#include "VirtualInputDevice.h"
 
 #define CHARACTERISTIC_UUID "533e1541-3abe-f33f-cd00-594e8b0a8ea3"
 #define DEVICE_NAME "Skylanders GamePad"
@@ -61,7 +62,7 @@ class Gamepad : public QObject
     Q_OBJECT
 
 public: // todo: what to be public and what to be private?
-    explicit Gamepad(const QString devicePath, std::unique_ptr<VirtualInputDevice> device, QObject *parent = nullptr);
+    explicit Gamepad(const QString devicePath, QPointer<VirtualInputDevice> device, QObject *parent = nullptr);
     ~Gamepad() override;
 
     /**
@@ -92,7 +93,7 @@ private:
     void resetState();
 
 private:
-    std::unique_ptr<VirtualInputDevice> m_inputDevice;
+    QPointer<VirtualInputDevice> m_inputDevice;
 
     // input state cache
     quint16 m_prevButtons = 0;
@@ -103,5 +104,5 @@ private:
 
 class GamepadFactory {
 public:
-    static Gamepad* create(const QString devicePath, std::unique_ptr<VirtualInputDevice> device, QObject *parent = nullptr);
+    static Gamepad* create(const QString devicePath, QPointer<VirtualInputDevice> device, QObject *parent = nullptr);
 };

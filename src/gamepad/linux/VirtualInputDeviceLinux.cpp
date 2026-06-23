@@ -34,10 +34,10 @@
 #include <stdexcept>
 #include <QString>
 #include <QDebug>
-#include "virtualinput_linux.h"
+#include "VirtualInputDeviceLinux.h"
 
-// MARK: LinuxVirtualInputDevice
-LinuxVirtualInputDevice::LinuxVirtualInputDevice(const QString &deviceName)
+// MARK: VirtualInputDeviceLinux
+VirtualInputDeviceLinux::VirtualInputDeviceLinux(const QString &deviceName)
 {
     libevdev *dev = libevdev_new();
     if (!dev) {
@@ -81,7 +81,7 @@ LinuxVirtualInputDevice::LinuxVirtualInputDevice(const QString &deviceName)
     qInfo() << "Virtual input device created at " << m_devicePath;
 }
 
-LinuxVirtualInputDevice::~LinuxVirtualInputDevice()
+VirtualInputDeviceLinux::~VirtualInputDeviceLinux()
 {
     if (m_uinput) {
         libevdev_uinput_destroy(m_uinput);
@@ -89,34 +89,34 @@ LinuxVirtualInputDevice::~LinuxVirtualInputDevice()
     }
 }
 
-bool LinuxVirtualInputDevice::writeButtonEvent(uint buttonCode, bool pressed)
+bool VirtualInputDeviceLinux::writeButtonEvent(uint buttonCode, bool pressed)
 {
     if (!m_uinput) return false;
 
     return libevdev_uinput_write_event(m_uinput, EV_KEY, buttonCode, pressed ? 1 : 0) == 0;
 }
 
-bool LinuxVirtualInputDevice::writeAxisEvent(uint axisCode, qint16 value)
+bool VirtualInputDeviceLinux::writeAxisEvent(uint axisCode, qint16 value)
 {
     if (!m_uinput) return false;
 
     return libevdev_uinput_write_event(m_uinput, EV_ABS, axisCode, value) == 0;
 }
 
-bool LinuxVirtualInputDevice::sync()
+bool VirtualInputDeviceLinux::sync()
 {
     if (!m_uinput) return false;
 
     return libevdev_uinput_write_event(m_uinput, EV_SYN, SYN_REPORT, 0) == 0;
 }
 
-QString LinuxVirtualInputDevice::getDevicePath() const
+QString VirtualInputDeviceLinux::getDevicePath() const
 {
     return m_devicePath;
 }
 
 // MARK: VirtualInputFactory
-std::unique_ptr<VirtualInputDevice> VirtualInputFactory::create(const QString &deviceName)
+VirtualInputDevice* VirtualInputDeviceFactory::create(const QString &deviceName)
 {
-    return std::make_unique<LinuxVirtualInputDevice>(deviceName);
+    return new VirtualInputDeviceLinux(deviceName);
 }

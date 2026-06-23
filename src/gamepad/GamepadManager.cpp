@@ -87,9 +87,9 @@ void GamepadManager::addGamepad(const QString &devicePath)
         }
     }
 
-    auto device = VirtualInputFactory::create(DEVICE_NAME);
+    auto device = VirtualInputDeviceFactory::create(DEVICE_NAME);
 
-    QPointer<Gamepad> gamepad = GamepadFactory::create(devicePath, std::move(device), this);
+    QPointer<Gamepad> gamepad = GamepadFactory::create(devicePath, device, this);
 
     m_gamepads.append(gamepad);
 }

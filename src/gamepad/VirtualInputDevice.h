@@ -18,10 +18,11 @@
 
 #pragma once
 
-#include <QtGlobal>
-#include <memory>
+#include <QObject>
 
-class VirtualInputDevice {
+class VirtualInputDevice : public QObject {
+    Q_OBJECT
+
 public:
     virtual ~VirtualInputDevice() = default;
 
@@ -32,7 +33,7 @@ public:
 };
 
 
-class VirtualInputFactory {
+class VirtualInputDeviceFactory {
 public:
-    static std::unique_ptr<VirtualInputDevice> create(const QString &deviceName);
+    static VirtualInputDevice* create(const QString &deviceName);
 };
