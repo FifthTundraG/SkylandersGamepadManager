@@ -22,6 +22,7 @@
 #include <QObject>
 #include <QString>
 #include <QtDBus/QDBusMessage>
+#include <QtDBus/QDBusConnection>
 #include "virtualinput.h"
 #include "../gamepad.h"
 
@@ -43,6 +44,8 @@ private slots:
 
 
 private:
+    QDBusConnection m_connection;
+
     /**
      * @param uuid The characteristic UUID to search for
      */

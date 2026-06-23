@@ -25,7 +25,7 @@
 #include <QtDBus/QDBusMetaType>
 
 GamepadLinux::GamepadLinux(const QString devicePath, std::unique_ptr<VirtualInputDevice> device, QObject *parent)
-    : Gamepad(devicePath, std::move(device), parent)
+    : Gamepad(devicePath, std::move(device), parent), m_connection(QDBusConnection::systemBus())
 {
     // Find characteristic
     m_characteristicPath = findCharacteristicPath(CHARACTERISTIC_UUID);
@@ -35,7 +35,7 @@ GamepadLinux::GamepadLinux(const QString devicePath, std::unique_ptr<VirtualInpu
         "org.bluez",
         m_characteristicPath,
         "org.bluez.GattCharacteristic1",
-        QDBusConnection::systemBus()
+        m_connection
     );
 
     QDBusReply<void> reply = iface.call("StartNotify");
@@ -45,7 +45,7 @@ GamepadLinux::GamepadLinux(const QString devicePath, std::unique_ptr<VirtualInpu
     }
 
     // connect to characteristic changes so we can send data to virtual gamepad
-    bool success = QDBusConnection::systemBus().connect(
+    bool success = m_connection.connect(
         "org.bluez",
         m_characteristicPath,
         "org.freedesktop.DBus.Properties",
@@ -61,7 +61,7 @@ GamepadLinux::GamepadLinux(const QString devicePath, std::unique_ptr<VirtualInpu
 
 GamepadLinux::~GamepadLinux()
 {
-    QDBusConnection::systemBus().disconnect(
+    m_connection.disconnect(
         "org.bluez",
         m_characteristicPath,
         "org.freedesktop.DBus.Properties",
@@ -107,7 +107,7 @@ QString GamepadLinux::findCharacteristicPath(const QString &uuid)
         "org.bluez",
         "/",
         "org.freedesktop.DBus.ObjectManager",
-        QDBusConnection::systemBus()
+        this->m_connection
     );
 
     QDBusReply<ManagedObjects> reply = iface.call("GetManagedObjects");
@@ -158,7 +158,7 @@ QString GamepadLinux::getMacAddress() const
         "org.bluez",
         this->m_devicePath,
         "org.bluez.Device1",
-        QDBusConnection::systemBus()
+        this->m_connection
     );
 
     return device.property("Address").toString();
