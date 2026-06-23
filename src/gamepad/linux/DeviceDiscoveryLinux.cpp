@@ -55,7 +55,7 @@ DeviceDiscoveryLinux::DeviceDiscoveryLinux(QObject *parent)
     qDBusRegisterMetaType<ManagedObjects>();
 
     if (!m_connection.isConnected()) {
-        qCritical() << "Failed to connect to system D-Bus:" << m_connection.lastError().message();
+        qCritical() << "DeviceDiscovery: Failed to connect to system D-Bus:" << m_connection.lastError().message();
         return;
     }
 }

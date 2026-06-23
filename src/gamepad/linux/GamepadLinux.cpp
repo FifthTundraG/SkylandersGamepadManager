@@ -27,6 +27,11 @@
 GamepadLinux::GamepadLinux(const QString devicePath, QPointer<VirtualInputDevice> device, QObject *parent)
     : Gamepad(devicePath, device, parent), m_connection(QDBusConnection::systemBus())
 {
+    if (!m_connection.isConnected()) {
+        qCritical() << "GamepadLinux: Failed to connect to system D-Bus:" << m_connection.lastError().message();
+        return;
+    }
+
     // Find characteristic
     m_characteristicPath = findCharacteristicPath(CHARACTERISTIC_UUID);
 
