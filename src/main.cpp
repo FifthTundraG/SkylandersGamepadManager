@@ -18,8 +18,10 @@
 
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
+#include <QQmlContext>
 #include "gamepad/GamepadManager.h"
 #include "gamepad/DeviceDiscovery.h"
+#include "GamepadManagerBridge.h"
 
 int main(int argc, char *argv[])
 {
@@ -31,6 +33,10 @@ int main(int argc, char *argv[])
     qInfo() << "Setting up gamepad manager...";
 
     GamepadManager *manager = new GamepadManager();
+
+    GamepadManagerBridge *bridge = new GamepadManagerBridge(manager);
+
+    engine.rootContext()->setContextProperty("gamepads", bridge);
 
     qInfo() << "Manager set up. Checking for existing connections...";
 

@@ -37,6 +37,7 @@
 #include <QObject>
 #include <QString>
 #include <QPointer>
+#include <QColor>
 #include "VirtualInputDevice.h"
 
 #define CHARACTERISTIC_UUID "533e1541-3abe-f33f-cd00-594e8b0a8ea3"
@@ -60,6 +61,8 @@
 class Gamepad : public QObject
 {
     Q_OBJECT
+
+    Q_PROPERTY(QColor color READ getColor CONSTANT)
 
 public: // todo: what to be public and what to be private?
     explicit Gamepad(const QString devicePath, QPointer<VirtualInputDevice> device, QObject *parent = nullptr);

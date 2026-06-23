@@ -40,6 +40,10 @@ public:
 
     bool enablePassiveScanning();
 
+signals:
+    void gamepadConnected(const int index, const QPointer<Gamepad> gamepad);
+    void gamepadDisconnected(const int index, const QPointer<Gamepad> gamepad);
+
 private slots:
     void onDeviceConnected(const QString &devicePath);
     void onDeviceDisconnected(const QString &devicePath);

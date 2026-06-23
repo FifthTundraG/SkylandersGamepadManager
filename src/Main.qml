@@ -48,16 +48,16 @@ ApplicationWindow {
                 columns: 4
 
                 ControllerBox {
-                    color: "red"
+                    color: gamepads.pad0 ? gamepads.pad0.color : "gray"
                 }
                 ControllerBox {
-                    color: "green"
+                    color: gamepads.pad1 ? gamepads.pad1.color : "gray"
                 }
                 ControllerBox {
-                    color: "blue"
+                    color: gamepads.pad2 ? gamepads.pad2.color : "gray"
                 }
                 ControllerBox {
-                    color: "purple"
+                    color: gamepads.pad3 ? gamepads.pad3.color : "gray"
                 }
             }
         }

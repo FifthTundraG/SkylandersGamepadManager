@@ -92,14 +92,23 @@ void GamepadManager::addGamepad(const QString &devicePath)
     QPointer<Gamepad> gamepad = GamepadFactory::create(devicePath, device, this);
 
     m_gamepads.append(gamepad);
+
+    emit gamepadConnected(m_gamepads.size() - 1, gamepad); // m_gamepads.size() - 1 works because we literally just added a gamepad to the list
 }
 
 void GamepadManager::removeGamepad(const QString &devicePath)
 {
     QMutableListIterator<QPointer<Gamepad>> i(m_gamepads);
+    int index = 0;
     while (i.hasNext()) {
-        if (i.next()->m_devicePath == devicePath) {
+        QPointer<Gamepad> gamepad = i.next();
+
+        if (gamepad->m_devicePath == devicePath) {
             i.remove();
+
+            emit gamepadDisconnected(index, gamepad);
         }
+
+        index++;
     }
 }
