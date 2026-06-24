@@ -87,9 +87,7 @@ void GamepadManager::addGamepad(const QString &devicePath)
         }
     }
 
-    auto device = VirtualInputDeviceFactory::create(DEVICE_NAME);
-
-    QPointer<Gamepad> gamepad = GamepadFactory::create(devicePath, device, this);
+    QPointer<Gamepad> gamepad = GamepadFactory::create(devicePath, this);
 
     m_gamepads.append(gamepad);
 
@@ -104,9 +102,13 @@ void GamepadManager::removeGamepad(const QString &devicePath)
         QPointer<Gamepad> gamepad = i.next();
 
         if (gamepad->m_devicePath == devicePath) {
+            emit gamepadDisconnected(index, gamepad); // emit first in case listeners still need gamepad info
+
             i.remove();
 
-            emit gamepadDisconnected(index, gamepad);
+            gamepad->deleteLater(); // removing it from the QList does not destroy it
+
+            return; // exit early since we found what we need to remove
         }
 
         index++;

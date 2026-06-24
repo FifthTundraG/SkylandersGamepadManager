@@ -24,8 +24,9 @@
 #include <QtDBus/QDBusReply>
 #include <QtDBus/QDBusMetaType>
 
-GamepadLinux::GamepadLinux(const QString devicePath, QPointer<VirtualInputDevice> device, QObject *parent)
-    : Gamepad(devicePath, device, parent), m_connection(QDBusConnection::systemBus())
+GamepadLinux::GamepadLinux(const QString devicePath, QObject *parent)
+    : Gamepad(devicePath, parent),
+      m_connection(QDBusConnection::systemBus())
 {
     if (!m_connection.isConnected()) {
         qCritical() << "GamepadLinux: Failed to connect to system D-Bus:" << m_connection.lastError().message();
@@ -66,6 +67,8 @@ GamepadLinux::GamepadLinux(const QString devicePath, QPointer<VirtualInputDevice
 
 GamepadLinux::~GamepadLinux()
 {
+    qInfo() << "GamepadLinux: Destroying gamepad at" << m_devicePath;
+
     m_connection.disconnect(
         "org.bluez",
         m_characteristicPath,
@@ -169,7 +172,7 @@ QString GamepadLinux::getMacAddress() const
     return device.property("Address").toString();
 }
 
-Gamepad* GamepadFactory::create(const QString devicePath, QPointer<VirtualInputDevice> device, QObject *parent)
+Gamepad* GamepadFactory::create(const QString devicePath, QObject *parent)
 {
-    return new GamepadLinux(devicePath, device, parent);
+    return new GamepadLinux(devicePath, parent);
 }

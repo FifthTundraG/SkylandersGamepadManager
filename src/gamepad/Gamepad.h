@@ -65,7 +65,7 @@ class Gamepad : public QObject
     Q_PROPERTY(QColor color READ getColor CONSTANT)
 
 public: // todo: what to be public and what to be private?
-    explicit Gamepad(const QString devicePath, QPointer<VirtualInputDevice> device, QObject *parent = nullptr);
+    explicit Gamepad(const QString devicePath, QObject *parent = nullptr);
     ~Gamepad() override;
 
     /**
@@ -107,5 +107,5 @@ private:
 
 class GamepadFactory {
 public:
-    static Gamepad* create(const QString devicePath, QPointer<VirtualInputDevice> device, QObject *parent = nullptr);
+    static Gamepad* create(const QString devicePath, QObject *parent = nullptr);
 };

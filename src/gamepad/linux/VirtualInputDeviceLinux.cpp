@@ -34,10 +34,12 @@
 #include <stdexcept>
 #include <QString>
 #include <QDebug>
+#include <QObject>
 #include "VirtualInputDeviceLinux.h"
 
 // MARK: VirtualInputDeviceLinux
-VirtualInputDeviceLinux::VirtualInputDeviceLinux(const QString &deviceName)
+VirtualInputDeviceLinux::VirtualInputDeviceLinux(const QString &deviceName, QObject *parent)
+    : VirtualInputDevice(deviceName, parent)
 {
     libevdev *dev = libevdev_new();
     if (!dev) {
@@ -83,6 +85,7 @@ VirtualInputDeviceLinux::VirtualInputDeviceLinux(const QString &deviceName)
 
 VirtualInputDeviceLinux::~VirtualInputDeviceLinux()
 {
+    qInfo() << "VirtualInputDeviceLinux: Removing virtual input device at" << m_devicePath;
     if (m_uinput) {
         libevdev_uinput_destroy(m_uinput);
         m_uinput = nullptr;
@@ -116,7 +119,7 @@ QString VirtualInputDeviceLinux::getDevicePath() const
 }
 
 // MARK: VirtualInputFactory
-VirtualInputDevice* VirtualInputDeviceFactory::create(const QString &deviceName)
+VirtualInputDevice* VirtualInputDeviceFactory::create(const QString &deviceName, QObject* parent)
 {
-    return new VirtualInputDeviceLinux(deviceName);
+    return new VirtualInputDeviceLinux(deviceName, parent);
 }

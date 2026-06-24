@@ -23,11 +23,11 @@
 // TODO: below include needs a platform-specific abstraction
 #include <linux/input-event-codes.h>
 
-Gamepad::Gamepad(const QString devicePath, QPointer<VirtualInputDevice> device, QObject *parent)
+Gamepad::Gamepad(const QString devicePath, QObject *parent)
     : QObject(parent),
-      m_devicePath(devicePath),
-      m_inputDevice(device)
+      m_devicePath(devicePath)
 {
+    m_inputDevice = VirtualInputDeviceFactory::create(DEVICE_NAME, this);
 }
 
 Gamepad::~Gamepad()

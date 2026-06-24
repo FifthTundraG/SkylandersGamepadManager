@@ -27,7 +27,7 @@ class VirtualInputDeviceLinux : public VirtualInputDevice {
     Q_OBJECT
 
 public:
-    explicit VirtualInputDeviceLinux(const QString &deviceName);
+    explicit VirtualInputDeviceLinux(const QString &deviceName, QObject *parent = nullptr);
     ~VirtualInputDeviceLinux() override;
 
     /**

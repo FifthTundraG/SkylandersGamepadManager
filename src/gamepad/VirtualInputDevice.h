@@ -24,6 +24,8 @@ class VirtualInputDevice : public QObject {
     Q_OBJECT
 
 public:
+    explicit VirtualInputDevice(const QString devicePath, QObject *parent = nullptr)
+        : QObject(parent) {};
     virtual ~VirtualInputDevice() = default;
 
     virtual bool writeButtonEvent(uint buttonCode, bool pressed) = 0;
@@ -35,5 +37,5 @@ public:
 
 class VirtualInputDeviceFactory {
 public:
-    static VirtualInputDevice* create(const QString &deviceName);
+    static VirtualInputDevice* create(const QString &deviceName, QObject* parent = nullptr);
 };

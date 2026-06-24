@@ -31,7 +31,7 @@ class GamepadLinux : public Gamepad
     Q_OBJECT
 
 public: // todo: what to be public and what to be private?
-    explicit GamepadLinux(const QString devicePath, QPointer<VirtualInputDevice> device, QObject *parent = nullptr);
+    explicit GamepadLinux(const QString devicePath, QObject *parent = nullptr);
     ~GamepadLinux() override;
 
     /** example format: /org/bluez/hci0/dev_D2_C6_F7_00_76_A8/service000c/char000d */
