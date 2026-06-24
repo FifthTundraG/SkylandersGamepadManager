@@ -28,11 +28,12 @@ public:
     explicit DeviceDiscovery(QObject *parent = nullptr) : QObject(parent) {}
     virtual ~DeviceDiscovery() = default;
 
+    /**
+     * Search **all connected devices** for gamepads
+     *
+     * Note: this likely has a notable performance impact. It should probably not be used for passive scanning unless the platform requires it.
+     */
     virtual QStringList findGamepads() = 0;
-    virtual bool isConnected(const QString &devicePath) = 0;
-
-    virtual bool startNotify(const QString &characteristicPath) = 0;
-    virtual bool stopNotify(const QString &characteristicPath) = 0;
 
     virtual bool enablePassiveScanning() = 0;
 

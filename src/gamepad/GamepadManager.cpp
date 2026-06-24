@@ -69,14 +69,14 @@ bool GamepadManager::enablePassiveScanning()
 
 void GamepadManager::onDeviceConnected(const QString &devicePath)
 {
-    qInfo() << "Device connected:" << devicePath;
     addGamepad(devicePath);
+    qInfo() << "GamepadManager: Device connected:" << devicePath;
 }
 
 void GamepadManager::onDeviceDisconnected(const QString &devicePath)
 {
-    qInfo() << "Device disconnected:" << devicePath;
     removeGamepad(devicePath);
+    qInfo() << "GamepadManager: Device disconnected:" << devicePath;
 }
 
 void GamepadManager::addGamepad(const QString &devicePath)

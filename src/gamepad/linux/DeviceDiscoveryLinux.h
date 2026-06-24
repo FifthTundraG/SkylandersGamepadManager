@@ -22,25 +22,29 @@
 #include <QObject>
 #include <QtDBus/QDBusConnection>
 #include <QtDBus/QDBusObjectPath>
+#include <QtDBus/QDBusContext>
 
-class DeviceDiscoveryLinux : public DeviceDiscovery {
+class DeviceDiscoveryLinux : public DeviceDiscovery, protected QDBusContext {
     Q_OBJECT
 
 public:
     explicit DeviceDiscoveryLinux(QObject *parent = nullptr);
 
     QStringList findGamepads() override;
-    bool isConnected(const QString &devicePath) override;
-
-    bool startNotify(const QString &characteristicPath) override;
-    bool stopNotify(const QString &characteristicPath) override;
 
     bool enablePassiveScanning() override;
 
 private slots:
-    void onInterfacesAdded(const QDBusObjectPath &path, const QVariantMap &interfaces);
-    void onInterfacesRemoved(const QDBusObjectPath &path, const QStringList &interfaces);
+    void onInterfacesAdded(const QDBusObjectPath &path, const QMap<QString, QVariantMap> &interfaces);
+    void onInterfacesRemoved(const QDBusObjectPath &path, const QMap<QString, QVariantMap> &interfaces);
+
+    void onPropertiesChangedOnKnownDevice(const QString &interface, const QVariantMap &changedProperties, const QStringList &invalidatedProperties);
 
 private:
     QDBusConnection m_connection;
+
+    /**
+     * List of known Skylanders GamePad devices detected from an interface being added with a name that matches our criteria, but it is NOT connected yet.
+     */
+    QList<QString> m_knownDevices;
 };

@@ -60,6 +60,21 @@ DeviceDiscoveryLinux::DeviceDiscoveryLinux(QObject *parent)
     }
 }
 
+/**
+ * Checks if a given device's properties qualifies it as a Skylander Gamepad
+ *
+ * @param deviceProps org.bluez.Device1 properties
+ */
+static bool isSkylandersGamepad(const QVariantMap deviceProps)
+{
+    // todo: we should probably instead check by using some sort of vendor ID
+    if (deviceProps.value("Name").toString() == DEVICE_NAME) {
+        return true;
+    }
+
+    return false;
+}
+
 QStringList DeviceDiscoveryLinux::findGamepads()
 {
     if (!m_connection.isConnected()) {
@@ -106,57 +121,6 @@ QStringList DeviceDiscoveryLinux::findGamepads()
     return results;
 }
 
-bool DeviceDiscoveryLinux::isConnected(const QString &devicePath)
-{
-    QDBusInterface device(
-        "org.bluez",
-        devicePath,
-        "org.freedesktop.DBus.Properties",
-        m_connection
-    );
-
-    return device.property("Connected").toBool();
-
-}
-
-bool DeviceDiscoveryLinux::startNotify(const QString &characteristicPath)
-{
-    QDBusInterface charInterface(
-        "org.bluez",
-        characteristicPath,
-        "org.bluez.GattCharacteristic1",
-        m_connection
-    );
-
-    QDBusReply<void> reply = charInterface.call("StartNotify");
-
-    if (!reply.isValid()) {
-        qWarning() << "StartNotify failed: " << reply.error().message();
-        return false;
-    }
-
-    return true;
-}
-
-bool DeviceDiscoveryLinux::stopNotify(const QString &characteristicPath)
-{
-    QDBusInterface charInterface(
-        "org.bluez",
-        characteristicPath,
-        "org.bluez.GattCharacteristic1",
-        m_connection
-    );
-
-    QDBusReply<void> reply = charInterface.call("StopNotify");
-
-    if (!reply.isValid()) {
-        qWarning() << "StopNotify failed: " << reply.error().message();
-        return false;
-    }
-
-    return true;
-}
-
 bool DeviceDiscoveryLinux::enablePassiveScanning() // todo: make this setPassiveScanning and allow unsubscribing from these D-Bus signals
 {
     bool autoConnect = m_connection.connect(
@@ -165,7 +129,7 @@ bool DeviceDiscoveryLinux::enablePassiveScanning() // todo: make this setPassive
         "org.freedesktop.DBus.ObjectManager",
         "InterfacesAdded",
         this,
-        SLOT(onInterfacesAdded(QDBusObjectPath,QVariantMap))
+        SLOT(onInterfacesAdded(QDBusObjectPath, QMap<QString, QVariantMap>))
     );
     if (!autoConnect) {
         qWarning() << "DeviceDiscovery: Passive scanning failed: Could not subscribe to InterfacesAdded signal";
@@ -178,7 +142,7 @@ bool DeviceDiscoveryLinux::enablePassiveScanning() // todo: make this setPassive
         "org.freedesktop.DBus.ObjectManager",
         "InterfacesRemoved",
         this,
-        SLOT(onInterfacesRemoved(QDBusObjectPath,QStringList))
+        SLOT(onInterfacesRemoved(QDBusObjectPath, QMap<QString, QVariantMap>))
     );
     if (!removedConnect) {
         qWarning() << "DeviceDiscovery: Passive scanning failed: Could not subscribe to InterfacesRemoved signal";
@@ -188,26 +152,82 @@ bool DeviceDiscoveryLinux::enablePassiveScanning() // todo: make this setPassive
     return true;
 }
 
-void DeviceDiscoveryLinux::onInterfacesAdded(const QDBusObjectPath &path, const QVariantMap &interfaces)
+void DeviceDiscoveryLinux::onInterfacesAdded(const QDBusObjectPath &path, const QMap<QString, QVariantMap> &interfaces)
 {
     if (!interfaces.contains("org.bluez.Device1"))
         return;
 
-    qInfo() << "Bluetooth device appeared:" << path.path();
+    if (isSkylandersGamepad(interfaces["org.bluez.Device1"])) {
+        qInfo() << "DeviceDiscovery: Found new unconnected gamepad:" << path.path();
+        m_knownDevices.append(path.path());
 
-    qInfo() << interfaces;
-
-    // todo: implement
+        // subscribe to properties changed for the unconnected gamepad to check if it gets connected, and if it does then create a new Gamepad
+        bool propertiesChangedConnect = m_connection.connect(
+            "org.bluez",
+            path.path(),
+            "org.freedesktop.DBus.Properties",
+            "PropertiesChanged",
+            this,
+            SLOT(onPropertiesChangedOnKnownDevice(QString, QVariantMap, QStringList))
+        );
+        if (!propertiesChangedConnect) {
+            qWarning() << "DeviceDiscovery: Could not subscribe to PropertiesChanged signal for" << path.path();
+        }
+    }
 }
 
-void DeviceDiscoveryLinux::onInterfacesRemoved(const QDBusObjectPath &path, const QStringList &interfaces)
+void DeviceDiscoveryLinux::onInterfacesRemoved(const QDBusObjectPath &path, const  QMap<QString, QVariantMap> &interfaces)
 {
     if (!interfaces.contains("org.bluez.Device1"))
         return;
 
-    qInfo() << "Bluetooth device disappeared:" << path.path();
+    if (m_knownDevices.contains(path.path())) {
+        qInfo() << "DeviceDiscovery: Removing known device at" << path.path();
 
-    // todo: implement (remove gamepad)
+        m_knownDevices.removeAll(path.path()); // removeAll even though there is almost certainly only one, just in case
+
+        // unsubscribe from PropertiesChanged on this device (todo: do we need to do this?)
+        bool propertiesChangedDisconnect = m_connection.disconnect(
+            "org.bluez",
+            path.path(),
+            "org.freedesktop.DBus.Properties",
+            "PropertiesChanged",
+            this,
+            SLOT(onPropertiesChangedOnKnownDevice(QDBusObjectPath,QStringList))
+        );
+        if (!propertiesChangedDisconnect) {
+            qWarning() << "DeviceDiscovery: Could not unsubscribe from PropertiesChanged signal for" << path.path();
+        }
+
+        //* PropertiesChanged will handle removing the gamepad via deviceDisconnected signal
+    }
+}
+
+void DeviceDiscoveryLinux::onPropertiesChangedOnKnownDevice(const QString &interface, const QVariantMap &changedProperties, const QStringList &invalidatedProperties)
+{
+    Q_UNUSED(invalidatedProperties);
+
+    if (interface != "org.bluez.Device1") {
+        return;
+    }
+
+    auto devicePath = message().path();
+
+    if (changedProperties.contains("ServicesResolved")) { //* we need services to resolve for the device to connect, for services to resolve the device must be connected so this is essentially a connected check
+        bool servicesResolved = changedProperties.value("ServicesResolved").toBool();
+
+        if (servicesResolved) {
+            emit deviceConnected(devicePath);
+        }
+    }
+
+    if (changedProperties.contains("Connected")) {
+        bool connected = changedProperties.value("Connected").toBool();
+
+        if (!connected) {
+            emit deviceDisconnected(devicePath);
+        }
+    }
 }
 
 // MARK: DeviceDiscoveryFactory
